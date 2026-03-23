@@ -2,6 +2,7 @@
 import Layout from '@layouts/Layout.astro'
 import Header from '@components/Header.astro'
 import Footer from '@components/Footer.astro'
+import PostInteractions from '@components/PostInteractions'
 ---
 
 <Layout
@@ -80,6 +81,8 @@ import Footer from '@components/Footer.astro'
           <a href="/blog" class="btn-outline btn--sm">← Back to blog</a>
           <a href="/projects/personal/run-companion" class="btn-outline btn--sm">View project →</a>
         </div>
+
+        <PostInteractions postId="building-run-companion" client:load />
       </div>
     </section>
   </main>
