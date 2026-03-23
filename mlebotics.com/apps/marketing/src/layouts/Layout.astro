@@ -1,5 +1,6 @@
 ---
 import '../styles/global.css'
+import ChatWidget from '@components/ChatWidget.astro'
 
 interface Props {
   title: string
@@ -23,5 +24,6 @@ const { title, description = 'Building modular AI, automation, and robotics tool
   </head>
   <body>
     <slot />
+    <ChatWidget />
   </body>
 </html>

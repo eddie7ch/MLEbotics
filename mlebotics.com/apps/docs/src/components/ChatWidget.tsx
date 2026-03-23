@@ -4,8 +4,10 @@ import { useState, useRef, useEffect, useCallback } from 'react'
 import { MessageCircle, X, Send, Wifi, WifiOff, Pencil } from 'lucide-react'
 import { subscribeToChatMessages, sendChatMessage, type ChatMessage } from '@/lib/firebase'
 
-const LOCAL_KEY       = 'mlebotics_chat_draft'
-const LOCAL_NAME_KEY  = 'mlebotics_chat_name'
+const LOCAL_KEY         = 'mlebotics_chat_draft'
+const LOCAL_NAME_KEY    = 'mlebotics_chat_name'
+const LOCAL_DISMISS_KEY = 'mlebotics_chat_dismissed'
+const LOCAL_OPEN_KEY    = 'mlebotics_chat_open'
 
 function formatTimestamp(seconds: number): string {
   const d   = new Date(seconds * 1000)
@@ -20,7 +22,12 @@ function formatTimestamp(seconds: number): string {
 }
 
 export function ChatWidget() {
-  const [open, setOpen]         = useState(false)
+  const [dismissed, setDismissed] = useState(() =>
+    typeof window !== 'undefined' ? localStorage.getItem(LOCAL_DISMISS_KEY) === '1' : false
+  )
+  const [open, setOpen] = useState(() =>
+    typeof window !== 'undefined' ? localStorage.getItem(LOCAL_OPEN_KEY) === '1' : false
+  )
   const [messages, setMessages] = useState<ChatMessage[]>([])
   const [input, setInput]       = useState(() =>
     typeof window !== 'undefined' ? localStorage.getItem(LOCAL_KEY) ?? '' : ''
@@ -91,22 +98,46 @@ export function ChatWidget() {
     }
   }, [input, sending, name])
 
+  const toggleOpen = (val: boolean) => {
+    setOpen(val)
+    localStorage.setItem(LOCAL_OPEN_KEY, val ? '1' : '0')
+  }
+
+  const dismiss = () => {
+    setDismissed(true)
+    setOpen(false)
+    localStorage.setItem(LOCAL_DISMISS_KEY, '1')
+    localStorage.setItem(LOCAL_OPEN_KEY, '0')
+  }
+
+  if (dismissed) return null
+
   return (
     <>
       {/* Floating button */}
-      <button
-        onClick={() => setOpen(o => !o)}
-        aria-label="Community chat"
-        className="fixed bottom-6 right-6 z-50 flex items-center gap-2 rounded-full bg-cyan-500 px-4 py-3 text-sm font-semibold text-gray-950 shadow-lg shadow-cyan-500/25 transition-all hover:bg-cyan-400 hover:scale-105 active:scale-95"
-      >
-        <MessageCircle size={16} />
-        Community
-        {messages.length > 0 && (
-          <span className="rounded-full bg-gray-950/20 px-1.5 py-0.5 text-[10px] font-bold">
-            {messages.length}
-          </span>
-        )}
-      </button>
+      <div className="fixed bottom-6 right-6 z-50 flex items-center">
+        <button
+          onClick={() => toggleOpen(!open)}
+          aria-label="Community chat"
+          className="flex items-center gap-2 rounded-full bg-cyan-500 px-4 py-3 text-sm font-semibold text-gray-950 shadow-lg shadow-cyan-500/25 transition-all hover:bg-cyan-400 hover:scale-105 active:scale-95"
+        >
+          <MessageCircle size={16} />
+          Community
+          {messages.length > 0 && (
+            <span className="rounded-full bg-gray-950/20 px-1.5 py-0.5 text-[10px] font-bold">
+              {messages.length}
+            </span>
+          )}
+        </button>
+        <button
+          onClick={dismiss}
+          aria-label="Dismiss chat"
+          title="Hide chat"
+          className="absolute -top-1.5 -right-1.5 flex h-4 w-4 items-center justify-center rounded-full border border-gray-600 bg-gray-700 text-[10px] text-gray-400 hover:text-white transition-colors"
+        >
+          ×
+        </button>
+      </div>
 
       {/* Panel */}
       {open && (
@@ -123,7 +154,7 @@ export function ChatWidget() {
                 {online ? 'Live' : 'Offline'}
               </span>
             </div>
-            <button onClick={() => setOpen(false)} className="text-gray-400 hover:text-white transition-colors">
+            <button onClick={() => toggleOpen(false)} className="text-gray-400 hover:text-white transition-colors">
               <X size={15} />
             </button>
           </div>
