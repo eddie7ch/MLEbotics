@@ -8,9 +8,14 @@ $root = "D:\MLEbotics\mlebotics.com"
 Set-Location $root
 [System.Console]::Title = $Title
 
-# Background timer — resets title every 2s because Next.js overrides it on startup
-$callback = [System.Threading.TimerCallback]{ param($t) try { [System.Console]::Title = $t } catch {} }
-$timer = New-Object System.Threading.Timer($callback, $Title, 2000, 2000)
+# Background runspace that keeps forcing the title back every 500ms
+# (Node.js/Next.js overrides the title via ANSI escape sequences)
+$rs = [System.Management.Automation.Runspaces.RunspaceFactory]::CreateRunspace()
+$rs.Open()
+$rs.SessionStateProxy.SetVariable('t', $Title)
+$ps = [System.Management.Automation.PowerShell]::Create()
+$ps.Runspace = $rs
+$null = $ps.AddScript({ while ($true) { [System.Console]::Title = $t; Start-Sleep -Milliseconds 500 } }).BeginInvoke()
 
 while ($true) {
     Write-Host ""
