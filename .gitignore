@@ -34,6 +34,7 @@ Running app/runcompanion-web/
 .venv/
 
 # Secret/credential files — never commit these
+.secrets.baseline
 .env
 .env.*
 !.env.example
