@@ -61,10 +61,10 @@ $desktop = [System.Environment]::GetFolderPath('Desktop')
 $wsh     = New-Object -ComObject WScript.Shell
 
 function New-Shortcut {
-    param($Name, $Target, $Args, $Desc, $Icon)
+    param($Name, $Target, $ShortcutArgs, $Desc, $Icon)
     $lnk = $wsh.CreateShortcut("$desktop\$Name.lnk")
     $lnk.TargetPath       = $Target
-    $lnk.Arguments        = $Args
+    $lnk.Arguments        = $ShortcutArgs
     $lnk.Description      = $Desc
     if ($Icon) { $lnk.IconLocation = $Icon }
     $lnk.WindowStyle      = 1
@@ -72,27 +72,27 @@ function New-Shortcut {
     Write-Host "  Created: $Name.lnk" -ForegroundColor Green
 }
 
-# START SESSION — git pull & open dev servers
+# START SESSION - git pull and open dev servers
 New-Shortcut `
     -Name "START SESSION" `
     -Target "powershell.exe" `
-    -Args "-NoProfile -ExecutionPolicy Bypass -File `"$RepoRoot\mlebotics.com\dev-all.ps1`"" `
+    -ShortcutArgs "-NoProfile -ExecutionPolicy Bypass -File `"$RepoRoot\mlebotics.com\dev-all.ps1`"" `
     -Desc "Pull latest and start all MLEbotics dev servers" `
     -Icon "%SystemRoot%\System32\shell32.dll,162"
 
-# MLEbotics Project Starter — VS Code workspace
+# MLEbotics Project Starter - VS Code workspace
 New-Shortcut `
     -Name "MLEbotics Project Starter" `
     -Target "code" `
-    -Args "`"D:\MLEbotics\MLEbotics.code-workspace`"" `
+    -ShortcutArgs "`"$RepoRoot\MLEbotics.code-workspace`"" `
     -Desc "Open MLEbotics workspace in VS Code" `
     -Icon "%SystemRoot%\System32\shell32.dll,21"
 
-# Close Project — commit, push, close VS Code
+# Close Project - commit, push, close VS Code
 New-Shortcut `
     -Name "Close Project" `
     -Target "powershell.exe" `
-    -Args "-NoProfile -ExecutionPolicy Bypass -File `"C:\Users\$env:USERNAME\scripts\close-project.ps1`"" `
+    -ShortcutArgs "-NoProfile -ExecutionPolicy Bypass -File `"C:\Users\$env:USERNAME\scripts\close-project.ps1`"" `
     -Desc "Commit, push and close VS Code" `
     -Icon "%SystemRoot%\System32\shell32.dll,131"
 

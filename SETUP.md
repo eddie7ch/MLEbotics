@@ -35,7 +35,7 @@ git pull origin main
 
 ```powershell
 cd D:\MLEbotics
-powershell -ExecutionPolicy Bypass -File setup-machine.ps1
+pwsh -ExecutionPolicy Bypass -File setup-machine.ps1
 ```
 
 This will automatically:

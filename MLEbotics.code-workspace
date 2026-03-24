@@ -1,6 +1,10 @@
 {
     "folders": [
         {
+            "name": "MLEbotics (root)",
+            "path": "."
+        },
+        {
             "name": "AutoFormFiller",
             "path": "AutoFormFiller"
         },
