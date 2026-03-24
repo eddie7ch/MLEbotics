@@ -2,10 +2,10 @@
 $root = "D:\MLEbotics\mlebotics.com"
 
 $apps = @(
-    @{ num=1; title="MARKETING"; cmd="pnpm run dev:marketing" },
-    @{ num=2; title="CONSOLE";   cmd="pnpm run dev:console"   },
-    @{ num=3; title="STUDIO";    cmd="pnpm run dev:studio"    },
-    @{ num=4; title="DOCS";      cmd="pnpm run dev:docs"      }
+    @{ num=1; title="Marketing"; cmd="pnpm run dev:marketing" },
+    @{ num=2; title="Console";   cmd="pnpm run dev:console"   },
+    @{ num=3; title="Studio";    cmd="pnpm run dev:studio"    },
+    @{ num=4; title="Docs";      cmd="pnpm run dev:docs"      }
 )
 
 Write-Host ""

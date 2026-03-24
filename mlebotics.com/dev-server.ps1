@@ -6,7 +6,7 @@ param(
 
 $root = "D:\MLEbotics\mlebotics.com"
 Set-Location $root
-$host.UI.RawUI.WindowTitle = "MLEbotics $Title"
+$host.UI.RawUI.WindowTitle = $Title
 
 while ($true) {
     Write-Host ""

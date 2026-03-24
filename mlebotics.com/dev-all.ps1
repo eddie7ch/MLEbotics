@@ -14,10 +14,10 @@ if (-not (Test-Path "$root\node_modules")) {
 }
 
 $apps = @(
-    @{ title="MARKETING"; cmd="pnpm run dev:marketing" },
-    @{ title="CONSOLE";   cmd="pnpm run dev:console"   },
-    @{ title="STUDIO";    cmd="pnpm run dev:studio"    },
-    @{ title="DOCS";      cmd="pnpm run dev:docs"      }
+    @{ title="Marketing"; cmd="pnpm run dev:marketing" },
+    @{ title="Console";   cmd="pnpm run dev:console"   },
+    @{ title="Studio";    cmd="pnpm run dev:studio"    },
+    @{ title="Docs";      cmd="pnpm run dev:docs"      }
 )
 
 Write-Host "Launching all MLEbotics dev servers..." -ForegroundColor White
