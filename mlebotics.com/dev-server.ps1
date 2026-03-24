@@ -6,7 +6,11 @@ param(
 
 $root = "D:\MLEbotics\mlebotics.com"
 Set-Location $root
-$host.UI.RawUI.WindowTitle = $Title
+[System.Console]::Title = $Title
+
+# Background timer — resets title every 2s because Next.js overrides it on startup
+$callback = [System.Threading.TimerCallback]{ param($t) try { [System.Console]::Title = $t } catch {} }
+$timer = New-Object System.Threading.Timer($callback, $Title, 2000, 2000)
 
 while ($true) {
     Write-Host ""
