@@ -25,9 +25,9 @@ function Start-Server($app) {
     Write-Host "  Launching $($app.title)..." -ForegroundColor Cyan
     Start-Process powershell -ArgumentList @(
         "-NoProfile", "-ExecutionPolicy", "Bypass", "-NoExit",
-        "-File", "$root\dev-server.ps1",
-        "-Title", $app.title,
-        "-Cmd", $app.cmd
+        "-File", "`"$root\dev-server.ps1`"",
+        "-Title", "`"$($app.title)`"",
+        "-Cmd", "`"$($app.cmd)`""
     )
 }
 

@@ -27,9 +27,9 @@ foreach ($app in $apps) {
     $cmd   = $app.cmd
     Start-Process powershell -ArgumentList @(
         "-NoProfile", "-ExecutionPolicy", "Bypass", "-NoExit",
-        "-File", "$root\dev-server.ps1",
-        "-Title", $title,
-        "-Cmd", $cmd
+        "-File", "`"$root\dev-server.ps1`"",
+        "-Title", "`"$title`"",
+        "-Cmd", "`"$cmd`""
     )
     Write-Host "  [+] $title" -ForegroundColor Cyan
     Start-Sleep -Milliseconds 500
