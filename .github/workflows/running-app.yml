@@ -1,0 +1,27 @@
+name: Flutter CI - RunCompanion
+
+on:
+  push:
+    paths:
+      - "Running app/**"
+  pull_request:
+    paths:
+      - "Running app/**"
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: "stable"
+      - name: Install dependencies
+        run: flutter pub get
+        working-directory: "Running app/RunCompanion"
+      - name: Analyze
+        run: flutter analyze
+        working-directory: "Running app/RunCompanion"
+      - name: Build APK
+        run: flutter build apk --debug
+        working-directory: "Running app/RunCompanion"
