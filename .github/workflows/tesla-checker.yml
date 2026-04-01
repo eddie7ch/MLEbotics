@@ -1,0 +1,53 @@
+name: Tesla Model Y Inventory Checker
+
+on:
+  schedule:
+    # 9:00 AM MDT (Calgary, UTC-6) = 15:00 UTC  [Apr–Oct]
+    # 9:00 AM MST (Calgary, UTC-7) = 16:00 UTC  [Nov–Mar]
+    # Running at both to cover daylight saving transitions
+    - cron: "0 15 * * *"
+    - cron: "0 16 * * *"
+  workflow_dispatch:  # allows manual trigger from GitHub UI
+
+permissions:
+  contents: write  # needed to commit seen VINs back to repo
+
+jobs:
+  check-inventory:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: pip install -r scripts/requirements_tesla.txt
+
+      - name: Run Tesla inventory checker
+        id: checker
+        run: |
+          python scripts/tesla_inventory_checker.py | tee /tmp/tesla_output.txt
+          echo "output_file=/tmp/tesla_output.txt" >> $GITHUB_OUTPUT
+
+      - name: Write results to Job Summary
+        if: always()
+        run: |
+          echo "## Tesla Model Y Grey AWD — Calgary Results" >> $GITHUB_STEP_SUMMARY
+          echo '```' >> $GITHUB_STEP_SUMMARY
+          cat /tmp/tesla_output.txt >> $GITHUB_STEP_SUMMARY
+          echo '```' >> $GITHUB_STEP_SUMMARY
+
+      - name: Commit updated seen VINs and log
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add scripts/tesla_seen_vins.json scripts/tesla_checker_log.json || true
+          git diff --staged --quiet || git commit -m "chore: Tesla checker run $(date -u '+%Y-%m-%d') [skip ci]"
+          git push || true
