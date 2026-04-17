@@ -61,6 +61,5 @@ exchange_token.ps1
 
 # Large binaries / downloads
 mlebotics.com/apps/marketing/public/downloads/
-mlebotics.com/apps/marketing/public/chevrons.png
 .vercel
 .env*.local
