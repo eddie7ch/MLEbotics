@@ -1,0 +1,165 @@
+---
+import Layout from '@layouts/Layout.astro'
+import Header from '@components/Header.astro'
+import Footer from '@components/Footer.astro'
+import '../../styles/global.css'
+
+const apps = [
+  {
+    name: 'RunCompanion',
+    icon: '🏃',
+    tagline: 'AI-powered running coach & tracker',
+    description: 'Plans training sessions, monitors pace and heart-rate zones, and syncs with robotics training hardware. Cross-platform Flutter app — runs in any browser.',
+    url: 'https://runningcompanion.web.app',
+    stack: ['Flutter', 'Firebase', 'Dart'],
+    status: 'live',
+  },
+  {
+    name: 'StockPulse',
+    icon: '📈',
+    tagline: 'Track, analyze, and collaborate on stocks',
+    description: 'Real-time stock data, market news, watchlist, portfolio tracker, and AI chat — all in one React app. Built as a school final group project.',
+    url: 'https://stockpulse-blush.vercel.app',
+    stack: ['React', 'Vite', 'JavaScript'],
+    status: 'live',
+  },
+  {
+    name: 'Movie Browser',
+    icon: '🎬',
+    tagline: 'Search and discover movies with TMDB',
+    description: 'SPA movie browser powered by the TMDB API. Top-rated listings, search, genre filtering, pagination, and a detailed movie overlay via React Portals.',
+    url: 'https://eddie7ch.github.io/SchoolWork-WebProgramming-React/movie-browser/',
+    stack: ['React', 'React Router', 'TMDB API'],
+    status: 'live',
+  },
+  {
+    name: 'Scriptoria',
+    icon: '🗡️',
+    tagline: 'Text adventure game set in a mysterious realm',
+    description: 'Browser-based text adventure game. Explore the land of Scriptoria, make choices, and survive — built as a school project with pure HTML and JavaScript.',
+    url: 'https://eddie7ch.github.io/SchoolWork-WebProgramming-React/web-adventure-game/',
+    stack: ['HTML', 'JavaScript'],
+    status: 'live',
+  },
+]
+---
+
+<Layout title="Web Apps" description="Browser-based apps built by MLEbotics — run instantly, no install needed.">
+  <Header />
+
+  <main>
+    <section class="section">
+      <div class="container">
+        <p class="tag">Web Apps</p>
+        <h1 class="section__h2">Run in your browser</h1>
+        <p class="page-sub">No install required. Click any app to open it instantly.</p>
+
+        <div class="apps-grid">
+          {apps.map(app => (
+            <a href={app.url} class="app-card" target="_blank" rel="noopener noreferrer">
+              <div class="app-card__header">
+                <span class="app-card__icon" aria-hidden="true">{app.icon}</span>
+                <span class="badge badge--live">Live</span>
+              </div>
+              <h2 class="app-card__name">{app.name}</h2>
+              <p class="app-card__tagline">{app.tagline}</p>
+              <p class="app-card__desc">{app.description}</p>
+              <div class="app-card__stack">
+                {app.stack.map(s => <span class="pill">{s}</span>)}
+              </div>
+              <span class="app-card__cta">Open app →</span>
+            </a>
+          ))}
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <Footer />
+</Layout>
+
+<style>
+  .page-sub {
+    color: var(--muted);
+    font-size: 1rem;
+    margin-bottom: 2.5rem;
+  }
+  .apps-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 1.5rem;
+  }
+  .app-card {
+    display: flex;
+    flex-direction: column;
+    gap: .75rem;
+    padding: 1.75rem;
+    background: var(--card-bg, rgba(255,255,255,.04));
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    text-decoration: none;
+    color: inherit;
+    transition: border-color .2s, transform .2s;
+  }
+  .app-card:hover {
+    border-color: var(--accent, #6c63ff);
+    transform: translateY(-3px);
+  }
+  .app-card__header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .app-card__icon {
+    font-size: 2rem;
+    line-height: 1;
+  }
+  .badge--live {
+    font-size: .7rem;
+    font-weight: 600;
+    padding: .25rem .6rem;
+    background: rgba(34,197,94,.15);
+    color: #4ade80;
+    border: 1px solid rgba(34,197,94,.3);
+    border-radius: 999px;
+    text-transform: uppercase;
+    letter-spacing: .05em;
+  }
+  .app-card__name {
+    font-size: 1.2rem;
+    font-weight: 700;
+    margin: 0;
+  }
+  .app-card__tagline {
+    font-size: .85rem;
+    font-weight: 600;
+    color: var(--accent, #6c63ff);
+    margin: 0;
+  }
+  .app-card__desc {
+    font-size: .875rem;
+    color: var(--muted);
+    line-height: 1.6;
+    margin: 0;
+    flex: 1;
+  }
+  .app-card__stack {
+    display: flex;
+    flex-wrap: wrap;
+    gap: .4rem;
+  }
+  .pill {
+    font-size: .7rem;
+    padding: .2rem .55rem;
+    background: rgba(255,255,255,.07);
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    color: var(--muted);
+  }
+  .app-card__cta {
+    font-size: .85rem;
+    font-weight: 600;
+    color: var(--accent, #6c63ff);
+    margin-top: .25rem;
+  }
+</style>
