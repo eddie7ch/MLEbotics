@@ -13,7 +13,9 @@ export default function FirestoreBlogList() {
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    getPublishedPosts().then(p => { setPosts(p); setLoading(false) })
+    getPublishedPosts()
+      .then(p => { setPosts(p); setLoading(false) })
+      .catch(() => setLoading(false))
   }, [])
 
   if (loading) return (

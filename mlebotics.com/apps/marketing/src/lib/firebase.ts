@@ -1,7 +1,7 @@
 import { initializeApp, getApps } from 'firebase/app'
 import {
   getFirestore, collection, getDocs, getDoc,
-  addDoc, doc, query, orderBy, where, serverTimestamp,
+  addDoc, doc, query, where, serverTimestamp,
   setDoc, increment,
 } from 'firebase/firestore'
 
@@ -33,10 +33,11 @@ export async function getPublishedPosts(): Promise<BlogPostPublic[]> {
   const q = query(
     collection(db, 'blog_posts'),
     where('published', '==', true),
-    orderBy('createdAt', 'desc'),
   )
   const snap = await getDocs(q)
-  return snap.docs.map(d => ({ id: d.id, ...d.data() } as BlogPostPublic))
+  const posts = snap.docs.map(d => ({ id: d.id, ...d.data() } as BlogPostPublic))
+  // Sort client-side to avoid requiring a composite Firestore index
+  return posts.sort((a, b) => (b.createdAt?.seconds ?? 0) - (a.createdAt?.seconds ?? 0))
 }
 
 export async function getPostById(id: string): Promise<BlogPostPublic | null> {
