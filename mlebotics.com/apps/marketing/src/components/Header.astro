@@ -20,6 +20,29 @@ const current = Astro.url.pathname
       {links.map(l => (
         <a href={l.href} class={`nav__link${current.startsWith(l.href) ? ' active' : ''}`}>{l.label}</a>
       ))}
+
+      <!-- Apps dropdown -->
+      <div class="dropdown">
+        <button class="nav__link dropdown__trigger" aria-haspopup="true" aria-expanded="false">
+          Apps <span class="dropdown__caret">▾</span>
+        </button>
+        <div class="dropdown__menu" role="menu">
+          <a href="/apps/web" class="dropdown__item" role="menuitem">
+            <span class="dropdown__icon">🌐</span>
+            <span>
+              <strong>Web Apps</strong>
+              <small>Run in your browser</small>
+            </span>
+          </a>
+          <a href="/apps/download" class="dropdown__item" role="menuitem">
+            <span class="dropdown__icon">⬇️</span>
+            <span>
+              <strong>Downloadable Apps</strong>
+              <small>Install on your device</small>
+            </span>
+          </a>
+        </div>
+      </div>
     </nav>
     <a href="https://console.mlebotics.com" class="btn-outline btn--sm">Dashboard &rarr;</a>
   </div>
@@ -57,7 +80,7 @@ const current = Astro.url.pathname
     height: 22px;
     width: 22px;
   }
-  .nav { display: flex; gap: 1.5rem; flex: 1; }
+  .nav { display: flex; gap: 1.5rem; flex: 1; align-items: center; }
   .nav__link {
     font-size: .875rem;
     color: var(--muted);
@@ -69,4 +92,46 @@ const current = Astro.url.pathname
   .nav__link:hover { color: #fff; }
   .nav__link.active { color: #fff; border-bottom-color: var(--cyan); }
   .btn--sm { padding: .45rem 1rem; font-size: .8rem; flex-shrink: 0; }
+
+  /* Dropdown */
+  .dropdown { position: relative; }
+  .dropdown__trigger {
+    background: none;
+    border: none;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: .25rem;
+  }
+  .dropdown__caret { font-size: .65rem; transition: transform .2s; }
+  .dropdown:hover .dropdown__caret { transform: rotate(180deg); }
+  .dropdown__menu {
+    display: none;
+    position: absolute;
+    top: calc(100% + .75rem);
+    left: 50%;
+    transform: translateX(-50%);
+    min-width: 220px;
+    background: #0d1117;
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: .5rem;
+    z-index: 200;
+    box-shadow: 0 16px 40px rgba(0,0,0,.5);
+  }
+  .dropdown:hover .dropdown__menu { display: flex; flex-direction: column; gap: .25rem; }
+  .dropdown__item {
+    display: flex;
+    align-items: center;
+    gap: .75rem;
+    padding: .65rem .85rem;
+    border-radius: 8px;
+    text-decoration: none;
+    transition: background .15s;
+    color: #fff;
+  }
+  .dropdown__item:hover { background: rgba(255,255,255,.06); }
+  .dropdown__icon { font-size: 1.1rem; flex-shrink: 0; }
+  .dropdown__item strong { display: block; font-size: .85rem; font-weight: 600; }
+  .dropdown__item small { display: block; font-size: .75rem; color: var(--muted); margin-top: .1rem; }
 </style>
