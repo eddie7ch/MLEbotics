@@ -22,11 +22,11 @@ const current = Astro.url.pathname
       ))}
 
       <!-- Apps dropdown -->
-      <div class="dropdown">
-        <button class="nav__link dropdown__trigger" aria-haspopup="true" aria-expanded="false">
+      <div class="dropdown" id="apps-dropdown">
+        <button class="nav__link dropdown__trigger" aria-haspopup="true" aria-expanded="false" id="apps-btn">
           Apps <span class="dropdown__caret">▾</span>
         </button>
-        <div class="dropdown__menu" role="menu">
+        <div class="dropdown__menu" role="menu" id="apps-menu">
           <a href="/apps/web" class="dropdown__item" role="menuitem">
             <span class="dropdown__icon">🌐</span>
             <span>
@@ -44,6 +44,20 @@ const current = Astro.url.pathname
         </div>
       </div>
     </nav>
+
+    <script>
+      const btn = document.getElementById('apps-btn')
+      const menu = document.getElementById('apps-menu')
+      btn?.addEventListener('click', (e) => {
+        e.stopPropagation()
+        const open = menu?.classList.toggle('open')
+        btn.setAttribute('aria-expanded', String(open))
+      })
+      document.addEventListener('click', () => {
+        menu?.classList.remove('open')
+        btn?.setAttribute('aria-expanded', 'false')
+      })
+    </script>
     <a href="https://console.mlebotics.com" class="btn-outline btn--sm">Dashboard &rarr;</a>
   </div>
 </header>
@@ -104,7 +118,6 @@ const current = Astro.url.pathname
     gap: .25rem;
   }
   .dropdown__caret { font-size: .65rem; transition: transform .2s; }
-  .dropdown:hover .dropdown__caret { transform: rotate(180deg); }
   .dropdown__menu {
     display: none;
     position: absolute;
@@ -119,7 +132,9 @@ const current = Astro.url.pathname
     z-index: 200;
     box-shadow: 0 16px 40px rgba(0,0,0,.5);
   }
-  .dropdown:hover .dropdown__menu { display: flex; flex-direction: column; gap: .25rem; }
+  .dropdown__menu.open { display: flex; flex-direction: column; gap: .25rem; }
+  .dropdown__menu.open ~ * .dropdown__caret,
+  [aria-expanded="true"] .dropdown__caret { transform: rotate(180deg); }
   .dropdown__item {
     display: flex;
     align-items: center;
