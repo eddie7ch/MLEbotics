@@ -4,8 +4,7 @@
   "git.decorations.badges": true,
   "workbench.colorTheme": "High Contrast",
   "workbench.iconTheme": "vs-seti",
-  "workbench.accessibilitySupport": "on"
-}{
+  "workbench.accessibilitySupport": "on",
   "[javascript]": {
     "editor.formatOnSave": false
   },

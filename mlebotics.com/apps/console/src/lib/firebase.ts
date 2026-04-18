@@ -196,4 +196,84 @@ export async function getBlogPost(id: string): Promise<BlogPost | null> {
   return { id: snap.id, ...snap.data() } as BlogPost
 }
 
+// ── Projects ─────────────────────────────────────────────────────────────────────────────
+
+export interface Project {
+  id: string
+  name: string
+  description: string
+  status: 'active' | 'archived' | 'draft'
+  createdAt: Timestamp | null
+  updatedAt: Timestamp | null
+}
+
+const PROJECTS_COLLECTION = 'projects'
+
+export function subscribeToProjects(onProjects: (projects: Project[]) => void) {
+  const q = query(collection(db, PROJECTS_COLLECTION), orderBy('createdAt', 'desc'))
+  return onSnapshot(q, snap => {
+    const projects: Project[] = snap.docs.map(d => ({
+      id: d.id,
+      ...d.data({ serverTimestamps: 'estimate' }),
+    } as Project))
+    onProjects(projects)
+  })
+}
+
+export async function createProject(
+  data: Omit<Project, 'id' | 'createdAt' | 'updatedAt'>,
+): Promise<string> {
+  const ref = await addDoc(collection(db, PROJECTS_COLLECTION), {
+    ...data,
+    createdAt: serverTimestamp(),
+    updatedAt: serverTimestamp(),
+  })
+  return ref.id
+}
+
+export async function deleteProject(id: string): Promise<void> {
+  await deleteDoc(doc(db, PROJECTS_COLLECTION, id))
+}
+
+// ── Robots ────────────────────────────────────────────────────────────────────────────
+
+export interface Robot {
+  id: string
+  name: string
+  type: string
+  status: 'online' | 'offline' | 'error'
+  createdAt: Timestamp | null
+}
+
+const ROBOTS_COLLECTION = 'robots'
+
+export function subscribeToRobots(onRobots: (robots: Robot[]) => void) {
+  const q = query(collection(db, ROBOTS_COLLECTION), orderBy('createdAt', 'desc'))
+  return onSnapshot(q, snap => {
+    const robots: Robot[] = snap.docs.map(d => ({
+      id: d.id,
+      ...d.data({ serverTimestamps: 'estimate' }),
+    } as Robot))
+    onRobots(robots)
+  })
+}
+
+export async function createRobot(
+  data: Omit<Robot, 'id' | 'createdAt'>,
+): Promise<string> {
+  const ref = await addDoc(collection(db, ROBOTS_COLLECTION), {
+    ...data,
+    createdAt: serverTimestamp(),
+  })
+  return ref.id
+}
+
+export async function updateRobotStatus(id: string, status: Robot['status']): Promise<void> {
+  await updateDoc(doc(db, ROBOTS_COLLECTION, id), { status })
+}
+
+export async function deleteRobot(id: string): Promise<void> {
+  await deleteDoc(doc(db, ROBOTS_COLLECTION, id))
+}
+
 export { db }

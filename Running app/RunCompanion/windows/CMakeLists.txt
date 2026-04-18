@@ -1,6 +1,13 @@
 # Project-level configuration.
 cmake_minimum_required(VERSION 3.14)
+
+# Force VS 2019 toolset for ABI compatibility with Firebase C++ SDK prebuilt libs
+set(CMAKE_VS_PLATFORM_TOOLSET "v142" CACHE STRING "" FORCE)
+
 project(runner_companion_app LANGUAGES CXX)
+
+# Fix for Firebase C++ SDK using old cmake_minimum_required syntax
+set(CMAKE_POLICY_VERSION_MINIMUM 3.5)
 
 # The name of the executable created for the application. Change this to change
 # the on-disk name of your application.

@@ -1,28 +1,55 @@
-const stats = [
-  { label: 'Active Projects', value: '0', change: '--', up: true },
-  { label: 'Connected Robots', value: '0', change: '--', up: true },
-  { label: 'Workflows Running', value: '0', change: '--', up: false },
-  { label: 'Team Members', value: '1', change: '--', up: true },
+'use client'
+
+import { useEffect, useState } from 'react'
+import { FolderOpen, Bot, Workflow, Users, ArrowUpRight } from 'lucide-react'
+import { subscribeToProjects, subscribeToRobots } from '@/lib/firebase'
+
+const STAT_META = [
+  { label: 'Active Projects',   key: 'projects',  icon: FolderOpen, color: '#00d4ff' },
+  { label: 'Connected Robots',  key: 'robots',    icon: Bot,        color: '#00ff88' },
+  { label: 'Workflows Running', key: 'workflows', icon: Workflow,   color: '#a78bfa' },
+  { label: 'Team Members',      key: 'members',   icon: Users,      color: '#fb923c' },
+] as const
+
+const QUICK_ACTIONS = [
+  { label: 'New Project',  href: '/projects' },
+  { label: 'Add Robot',    href: '/robots' },
+  { label: 'New Workflow', href: '/workflows' },
+  { label: 'Settings',     href: '/settings' },
 ]
 
-const activity: { text: string; time: string }[] = []
-
 export default function DashboardPage() {
+  const [counts, setCounts] = useState({ projects: 0, robots: 0, workflows: 0, members: 1 })
+
+  useEffect(() => {
+    const unsub1 = subscribeToProjects(p => setCounts(c => ({ ...c, projects: p.length })))
+    const unsub2 = subscribeToRobots(r  => setCounts(c => ({ ...c, robots: r.length })))
+    return () => { unsub1(); unsub2() }
+  }, [])
+
   return (
     <div className="space-y-8">
       {/* Header */}
       <div>
         <h1 className="text-2xl font-bold text-white">Dashboard</h1>
-        <p className="mt-1 text-sm text-gray-400">Welcome back. Here&apos;s what&apos;s happening.</p>
+        <p className="mt-1 text-sm text-[#64748b]">Welcome back. Here&apos;s what&apos;s happening.</p>
       </div>
 
       {/* Stats grid */}
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
-        {stats.map((s) => (
-          <div key={s.label} className="rounded-lg border border-gray-800 bg-gray-900 p-5">
-            <p className="text-xs font-medium uppercase tracking-wider text-gray-500">{s.label}</p>
-            <p className="mt-2 text-3xl font-bold text-white">{s.value}</p>
-            <p className={`mt-1 text-xs ${s.up ? 'text-emerald-400' : 'text-red-400'}`}>{s.change}</p>
+        {STAT_META.map(({ label, key, icon: Icon, color }) => (
+          <div
+            key={key}
+            className="glass-card p-5"
+            style={{ borderTop: `2px solid ${color}28` }}
+          >
+            <div className="flex items-center justify-between mb-3">
+              <p className="text-xs font-medium uppercase tracking-wider text-[#64748b]">{label}</p>
+              <div className="rounded-lg p-1.5" style={{ background: `${color}18` }}>
+                <Icon className="h-4 w-4" style={{ color }} />
+              </div>
+            </div>
+            <p className="text-3xl font-bold text-white">{counts[key]}</p>
           </div>
         ))}
       </div>
@@ -30,42 +57,27 @@ export default function DashboardPage() {
       {/* Two-col lower section */}
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
         {/* Recent activity */}
-        <div className="rounded-lg border border-gray-800 bg-gray-900 p-6">
-          <h2 className="mb-4 text-sm font-semibold uppercase tracking-wider text-gray-400">Recent Activity</h2>
-          {activity.length === 0 ? (
-            <div className="flex flex-col items-center justify-center py-12 text-center">
-              <div className="mb-3 h-10 w-10 rounded-full bg-gray-800" />
-              <p className="text-sm text-gray-500">No activity yet.</p>
-              <p className="mt-1 text-xs text-gray-600">Actions will appear here once you start using the platform.</p>
-            </div>
-          ) : (
-            <ul className="space-y-3">
-              {activity.map((a, i) => (
-                <li key={i} className="flex items-center justify-between text-sm">
-                  <span className="text-gray-300">{a.text}</span>
-                  <span className="text-gray-600">{a.time}</span>
-                </li>
-              ))}
-            </ul>
-          )}
+        <div className="glass-card p-6">
+          <h2 className="mb-4 text-sm font-semibold uppercase tracking-wider text-[#64748b]">Recent Activity</h2>
+          <div className="flex flex-col items-center justify-center py-12 text-center">
+            <div className="mb-3 h-10 w-10 rounded-full bg-[#1e293b]" />
+            <p className="text-sm text-[#64748b]">No activity yet.</p>
+            <p className="mt-1 text-xs text-[#374151]">Actions will appear here once you start using the platform.</p>
+          </div>
         </div>
 
         {/* Quick actions */}
-        <div className="rounded-lg border border-gray-800 bg-gray-900 p-6">
-          <h2 className="mb-4 text-sm font-semibold uppercase tracking-wider text-gray-400">Quick Actions</h2>
+        <div className="glass-card p-6">
+          <h2 className="mb-4 text-sm font-semibold uppercase tracking-wider text-[#64748b]">Quick Actions</h2>
           <div className="grid grid-cols-2 gap-3">
-            {[
-              { label: 'New Project',  href: '/projects' },
-              { label: 'Add Robot',    href: '/robots' },
-              { label: 'New Workflow', href: '/workflows' },
-              { label: 'Settings',     href: '/settings' },
-            ].map((action) => (
+            {QUICK_ACTIONS.map((action) => (
               <a
                 key={action.href}
                 href={action.href}
-                className="flex items-center justify-center rounded-md border border-gray-700 bg-gray-800 px-4 py-3 text-sm font-medium text-gray-300 transition-colors hover:border-indigo-500 hover:bg-gray-700 hover:text-white"
+                className="flex items-center justify-between rounded-lg border border-[#1e293b] bg-white/[0.02] px-4 py-3 text-sm font-medium text-[#e2e8f0] transition-all hover:border-[#00d4ff]/30 hover:text-[#00d4ff]"
               >
                 {action.label}
+                <ArrowUpRight className="h-3.5 w-3.5 opacity-50" />
               </a>
             ))}
           </div>

@@ -8,6 +8,41 @@ $root = "D:\MLEbotics\mlebotics.com"
 Set-Location $root
 [System.Console]::Title = $Title
 
+function Add-NodeToPath {
+    $nodeDirs = @(
+        "C:\Program Files\nodejs",
+        "$env:LOCALAPPDATA\Programs\nodejs"
+    )
+
+    foreach ($dir in $nodeDirs) {
+        if ((Test-Path $dir) -and ($env:Path -notlike "*$dir*")) {
+            $env:Path += ";$dir"
+        }
+    }
+}
+
+function Get-PnpmCommand {
+    $pnpmCmd = Get-Command pnpm.cmd -ErrorAction SilentlyContinue
+    if ($pnpmCmd) { return "& '$($pnpmCmd.Source)'" }
+
+    $pnpm = Get-Command pnpm -ErrorAction SilentlyContinue
+    if ($pnpm) { return "& '$($pnpm.Source)'" }
+
+    $corepackCmd = Get-Command corepack.cmd -ErrorAction SilentlyContinue
+    if ($corepackCmd) { return "& '$($corepackCmd.Source)' pnpm" }
+
+    $corepack = Get-Command corepack -ErrorAction SilentlyContinue
+    if ($corepack) { return "& '$($corepack.Source)' pnpm" }
+
+    throw 'pnpm/corepack not found. Install Node.js LTS or enable Corepack first.'
+}
+
+Add-NodeToPath
+$pnpm = Get-PnpmCommand
+if ($Cmd -match '^pnpm(?:\.cmd)?\s+') {
+    $Cmd = $Cmd -replace '^(?:[^\s]+\\)?pnpm(?:\.cmd)?', $pnpm
+}
+
 # Background runspace that keeps forcing the title back every 500ms
 # (Node.js/Next.js overrides the title via ANSI escape sequences)
 $rs = [System.Management.Automation.Runspaces.RunspaceFactory]::CreateRunspace()

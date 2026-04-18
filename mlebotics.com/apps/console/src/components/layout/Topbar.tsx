@@ -43,7 +43,7 @@ export function Topbar() {
   }
 
   return (
-    <header className="flex h-16 flex-shrink-0 items-center justify-between border-b border-gray-800 bg-gray-950 px-6">
+    <header className="flex h-16 flex-shrink-0 items-center justify-between border-b border-[#1e293b] bg-[#06080f] px-6">
       {/* Breadcrumb */}
       <div className="flex items-center gap-2 text-sm">
         <span className="text-gray-500">MLEbotics</span>

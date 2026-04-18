@@ -1,0 +1,42 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Owner emails — both are Eddie
+    function isOwner() {
+      return request.auth != null
+          && request.auth.token.email in [
+               'eddie@mlebotics.com',
+               'eddie7ch@gmail.com'
+             ];
+    }
+
+    // ── Blog posts ────────────────────────────────────────────────────────────
+    match /blog_posts/{postId} {
+      allow read: if true;                 // public reads
+      allow create, update, delete: if isOwner();
+    }
+
+    // ── Projects ──────────────────────────────────────────────────────────────
+    match /projects/{projectId} {
+      allow read, write: if isOwner();
+    }
+
+    // ── Robots ───────────────────────────────────────────────────────────────
+    match /robots/{robotId} {
+      allow read, write: if isOwner();
+    }
+
+    // ── Community chat ────────────────────────────────────────────────────────
+    match /community_chat/{msgId} {
+      allow read: if request.auth != null;
+      allow create: if request.auth != null;
+      allow update, delete: if isOwner();
+    }
+
+    // ── Catch-all: deny everything else ──────────────────────────────────────
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

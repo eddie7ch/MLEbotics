@@ -25,6 +25,8 @@ function Get-AppStatus {
                 CPU        = $null
                 CpuRaw     = $null
                 Memory     = $null
+                Uptime     = "-"
+                ErrCount   = 0
                 LogFile    = $app.LogFile
                 LastSeen   = "-"
                 SampleTime = $now
@@ -44,6 +46,8 @@ function Get-AppStatus {
                 CPU        = $null
                 CpuRaw     = $null
                 Memory     = $null
+                Uptime     = "-"
+                ErrCount   = 0
                 LogFile    = $app.LogFile
                 LastSeen   = "-"
                 SampleTime = $now
@@ -67,6 +71,24 @@ function Get-AppStatus {
 
         $memMB = [math]::Round($proc.WorkingSet64 / 1MB, 0)
 
+        # Uptime — how long the process has been alive
+        $uptime = "-"
+        try {
+            $span = $now - $proc.StartTime
+            if     ($span.TotalHours  -ge 1) { $uptime = "{0}h {1:D2}m" -f [int]$span.TotalHours, $span.Minutes }
+            elseif ($span.TotalMinutes -ge 1) { $uptime = "{0}m {1:D2}s" -f [int]$span.TotalMinutes, $span.Seconds }
+            else                              { $uptime = "{0}s"         -f $span.Seconds }
+        } catch {}
+
+        # Error count — scan last 300 lines of log for "error" (case-insensitive)
+        $errCount = 0
+        if ($app.LogFile -and (Test-Path $app.LogFile)) {
+            try {
+                $lines    = Get-Content $app.LogFile -Tail 300 -ErrorAction SilentlyContinue
+                $errCount = ($lines | Where-Object { $_ -match '(?i)\berror\b' }).Count
+            } catch {}
+        }
+
         # Last activity indicator: log file write time (only exists after a dashboard-restart)
         $lastSeen = "-"
         if ($app.LogFile -and (Test-Path $app.LogFile)) {
@@ -81,6 +103,8 @@ function Get-AppStatus {
             CPU        = $cpuPct
             CpuRaw     = $cpuRaw
             Memory     = $memMB
+            Uptime     = $uptime
+            ErrCount   = $errCount
             LogFile    = $app.LogFile
             LastSeen   = $lastSeen
             SampleTime = $now

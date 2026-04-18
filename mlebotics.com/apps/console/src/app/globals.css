@@ -19,3 +19,144 @@
 .logo-glow:hover {
   animation-duration: 1.2s;
 }
+
+/* ── Design tokens ───────────────────────────────────────────────────── */
+:root {
+  --bg:         #06080f;
+  --bg2:        #0d1117;
+  --surface:    rgba(13,17,23,0.75);
+  --border:     #1e293b;
+  --cyan:       #00d4ff;
+  --green:      #00ff88;
+  --text:       #e2e8f0;
+  --muted:      #64748b;
+  --radius:     12px;
+  --transition: .22s cubic-bezier(.22,1,.36,1);
+}
+
+@keyframes pulse-dot {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50%       { opacity: .6; transform: scale(1.5); }
+}
+
+@keyframes spin-ring {
+  to { transform: rotate(360deg); }
+}
+
+/* ── Glass card ─────────────────────────────────────────────────────── */
+.glass-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  backdrop-filter: blur(16px);
+  transition: border-color var(--transition), box-shadow var(--transition);
+}
+.glass-card:hover {
+  border-color: rgba(0,212,255,.2);
+  box-shadow: 0 0 0 1px rgba(0,212,255,.06), 0 8px 32px rgba(0,0,0,.4);
+}
+
+/* ── Buttons ────────────────────────────────────────────────────────── */
+.btn-cyan {
+  display: inline-flex;
+  align-items: center;
+  gap: .375rem;
+  background: linear-gradient(135deg, #00d4ff 0%, #0099cc 100%);
+  color: #06080f;
+  font-weight: 600;
+  font-size: .875rem;
+  padding: .5rem 1rem;
+  border-radius: 8px;
+  border: none;
+  cursor: pointer;
+  transition: opacity var(--transition), box-shadow var(--transition);
+}
+.btn-cyan:hover {
+  opacity: .9;
+  box-shadow: 0 0 20px rgba(0,212,255,.35);
+}
+.btn-cyan:disabled {
+  opacity: .45;
+  cursor: not-allowed;
+  box-shadow: none;
+}
+
+.btn-outline {
+  display: inline-flex;
+  align-items: center;
+  background: transparent;
+  color: var(--text);
+  font-size: .875rem;
+  font-weight: 500;
+  padding: .5rem 1rem;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  cursor: pointer;
+  transition: border-color var(--transition), color var(--transition);
+}
+.btn-outline:hover {
+  border-color: rgba(0,212,255,.4);
+  color: #00d4ff;
+}
+
+/* ── Status dot ─────────────────────────────────────────────────────── */
+.status-dot {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+.status-dot.online  { background: #00ff88; animation: pulse-dot 2s ease-in-out infinite; }
+.status-dot.offline { background: #64748b; }
+.status-dot.error   { background: #f87171; animation: pulse-dot 1.2s ease-in-out infinite; }
+
+/* ── Field inputs ───────────────────────────────────────────────────── */
+.field-input {
+  width: 100%;
+  background: rgba(13,17,23,0.8);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: .5rem .75rem;
+  font-size: .875rem;
+  color: var(--text);
+  outline: none;
+  transition: border-color var(--transition), box-shadow var(--transition);
+}
+.field-input::placeholder { color: var(--muted); }
+.field-input:focus {
+  border-color: rgba(0,212,255,.5);
+  box-shadow: 0 0 0 3px rgba(0,212,255,.1);
+}
+select.field-input option { background: #0d1117; color: var(--text); }
+
+/* ── Modal ──────────────────────────────────────────────────────────── */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,.65);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 50;
+}
+.modal-box {
+  background: #0d1117;
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 1.5rem;
+  width: 100%;
+  max-width: 440px;
+  box-shadow: 0 24px 64px rgba(0,0,0,.6);
+}
+
+/* ── Loading spinner ────────────────────────────────────────────────── */
+.spinner {
+  width: 2rem;
+  height: 2rem;
+  border-radius: 50%;
+  border: 2px solid var(--border);
+  border-top-color: var(--cyan);
+  animation: spin-ring .7s linear infinite;
+}

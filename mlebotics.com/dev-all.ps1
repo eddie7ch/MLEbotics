@@ -1,14 +1,66 @@
 ﻿$root = "D:\MLEbotics\mlebotics.com"
 Set-Location $root
 
+function Add-NodeToPath {
+    $nodeDirs = @(
+        "C:\Program Files\nodejs",
+        "$env:LOCALAPPDATA\Programs\nodejs"
+    )
+
+    foreach ($dir in $nodeDirs) {
+        if ((Test-Path $dir) -and ($env:Path -notlike "*$dir*")) {
+            $env:Path += ";$dir"
+        }
+    }
+}
+
+function Get-PnpmCommand {
+    $pnpmCmd = Get-Command pnpm.cmd -ErrorAction SilentlyContinue
+    if ($pnpmCmd) { return "& '$($pnpmCmd.Source)'" }
+
+    $pnpm = Get-Command pnpm -ErrorAction SilentlyContinue
+    if ($pnpm) { return "& '$($pnpm.Source)'" }
+
+    $corepackCmd = Get-Command corepack.cmd -ErrorAction SilentlyContinue
+    if ($corepackCmd) { return "& '$($corepackCmd.Source)' pnpm" }
+
+    $corepack = Get-Command corepack -ErrorAction SilentlyContinue
+    if ($corepack) { return "& '$($corepack.Source)' pnpm" }
+
+    throw 'pnpm/corepack not found. Install Node.js LTS or enable Corepack first.'
+}
+
+Add-NodeToPath
+$pnpm = Get-PnpmCommand
+$workspaceRoot = Split-Path $root -Parent
+$sessionScript = Join-Path $workspaceRoot "scripts\start-session.ps1"
+
+if (-not (Test-Path $sessionScript)) {
+    $sessionScript = Join-Path $workspaceRoot "start-session.ps1"
+}
+
 # Pull latest from GitHub before starting servers
 Write-Host "Running start-session..." -ForegroundColor White
-& "C:\Users\Eddie\scripts\start-session.ps1" -SkipStash
+if (Test-Path $sessionScript) {
+    $workspaceStatus = git -C $workspaceRoot status --porcelain 2>$null
+    if ($workspaceStatus) {
+        Write-Host "Workspace has uncommitted changes - skipping pull step." -ForegroundColor Yellow
+    } else {
+    & $sessionScript -SkipStash
+    if ($LASTEXITCODE -ne 0) {
+        Write-Host "start-session failed." -ForegroundColor Red
+        Read-Host "Press Enter to close"
+        exit 1
+    }
+    }
+} else {
+    Write-Host "start-session script not found - skipping pull step." -ForegroundColor Yellow
+}
 
 # Install dependencies if node_modules is missing
 if (-not (Test-Path "$root\node_modules")) {
     Write-Host "node_modules not found - running pnpm install..." -ForegroundColor Yellow
-    pnpm install
+    Invoke-Expression "$pnpm install"
     if ($LASTEXITCODE -ne 0) { Write-Host "pnpm install failed." -ForegroundColor Red; Read-Host "Press Enter to close"; exit 1 }
     Write-Host "Install complete." -ForegroundColor Green
 }
@@ -23,10 +75,10 @@ function Get-AppPort($appFolder, $defaultPort) {
 }
 
 $apps = @(
-    @{ title="Marketing"; cmd="pnpm run dev:marketing"; folder="marketing"; defaultPort=54321 },
-    @{ title="Console";   cmd="pnpm run dev:console";   folder="console";   defaultPort=3001  },
-    @{ title="Studio";    cmd="pnpm run dev:studio";    folder="studio";    defaultPort=3002  },
-    @{ title="Docs";      cmd="pnpm run dev:docs";      folder="docs";      defaultPort=3003  }
+    @{ title="Marketing"; cmd="$pnpm run dev:marketing"; folder="marketing"; defaultPort=54321 },
+    @{ title="Console";   cmd="$pnpm run dev:console";   folder="console";   defaultPort=3001  },
+    @{ title="Studio";    cmd="$pnpm run dev:studio";    folder="studio";    defaultPort=3002  },
+    @{ title="Docs";      cmd="$pnpm run dev:docs";      folder="docs";      defaultPort=3003  }
 )
 
 # Resolve actual ports from package.json (falls back to defaultPort if not found)

@@ -1,0 +1,22 @@
+anthropic>=0.40.0
+openai>=1.60.0
+pyautogui>=0.9.54
+mss>=9.0.1
+Pillow>=10.0.0
+python-dotenv>=1.0.0
+customtkinter>=5.2.0
+speechrecognition>=3.10.0
+pyttsx3>=2.90
+pyaudio>=0.2.14
+sounddevice>=0.4.6
+numpy>=1.24.0
+scipy>=1.10.0
+pygame>=2.5.0
+pyperclip>=1.8.2
+openai-whisper>=20231117
+
+# Web server (used by server.py and on Railway)
+flask>=3.0.0
+flask-cors>=4.0.0
+flask-socketio>=5.3.0
+simple-websocket>=1.0.0

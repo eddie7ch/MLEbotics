@@ -33,9 +33,9 @@ export function Sidebar() {
   const pathname = usePathname()
 
   return (
-    <aside className="flex w-60 flex-shrink-0 flex-col border-r border-gray-800 bg-gray-950">
+    <aside className="flex w-60 flex-shrink-0 flex-col border-r border-[#1e293b] bg-[#06080f]">
       {/* Logo */}
-      <div className="flex h-16 items-center border-b border-gray-800 px-4 gap-3">
+      <div className="flex h-16 items-center border-b border-[#1e293b] px-4 gap-3">
         <a href="https://mlebotics.com" className="logo-glow tracking-tight text-sm">MLEbotics</a>
         <span className="ml-auto text-[9px] font-semibold text-cyan-500 border border-cyan-500/30 rounded px-1.5 py-0.5 leading-none">
           CONSOLE
@@ -43,7 +43,7 @@ export function Sidebar() {
       </div>
 
       {/* Org switcher */}
-      <div className="px-3 py-3 border-b border-gray-800">
+      <div className="px-3 py-3 border-b border-[#1e293b]">
         <OrgSwitcher />
       </div>
 
@@ -72,7 +72,7 @@ export function Sidebar() {
       </nav>
 
       {/* Footer */}
-      <div className="border-t border-gray-800 p-4">
+      <div className="border-t border-[#1e293b] p-4">
         <div className="flex items-center gap-3">
           <div className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full bg-cyan-500/20 text-xs font-bold text-cyan-400">
             E

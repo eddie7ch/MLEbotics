@@ -1,0 +1,10 @@
+{
+  "permissions": {
+    "allow": [
+      "PowerShell(Get-Command python3)",
+      "PowerShell(python3 --version)",
+      "PowerShell(python3 -m pip list 2>&1)",
+      "PowerShell(Select-String -Pattern \"custom|pystray|keyboard|pillow|pywin|numpy\" -CaseSensitive:$false)"
+    ]
+  }
+}

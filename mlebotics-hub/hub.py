@@ -762,7 +762,7 @@ def main():
             topbar_canvas.create_rectangle(
                 i * seg, 0, (i+1) * seg + 1, 46, fill=fill, outline="")
         topbar_canvas.create_text(16, 23, text="⚡ MLEbotics Hub",
-                                   font=F_TITLE, fill="white", anchor="w")
+                                   font=("Segoe UI Emoji", 14, "bold"), fill="white", anchor="w")
         topbar_canvas.create_text(200, 23,
                                    text="Hey Girl  ·  Computer Use  ·  AutoFormFiller",
                                    font=F_SMALL, fill="#ffffff88", anchor="w")
@@ -798,7 +798,7 @@ def main():
     # ── Sidebar logo ──────────────────────────────────────────────────────────
     logo_frame = tk.Frame(sidebar, bg=SIDEBAR_BG, pady=18)
     logo_frame.pack(fill=tk.X)
-    tk.Label(logo_frame, text="⚡", font=("Segoe UI", 22),
+    tk.Label(logo_frame, text="⚡", font=("Segoe UI Emoji", 22),
              bg=SIDEBAR_BG, fg=NEON_PINK).pack()
     tk.Label(logo_frame, text="MLEbotics", font=("Segoe UI", 11, "bold"),
              bg=SIDEBAR_BG, fg=TEXT_FG).pack()
@@ -825,7 +825,7 @@ def main():
         indicator = tk.Frame(row, bg=SIDEBAR_BG, width=4)
         indicator.pack(side=tk.LEFT, fill=tk.Y, pady=2)
 
-        icon_lbl = tk.Label(row, text=icon, font=("Segoe UI", 13),
+        icon_lbl = tk.Label(row, text=icon, font=("Segoe UI Emoji", 13),
                              bg=SIDEBAR_BG, fg=color, width=3)
         icon_lbl.pack(side=tk.LEFT)
 

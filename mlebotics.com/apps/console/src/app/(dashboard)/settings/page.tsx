@@ -24,7 +24,7 @@ export default function SettingsPage() {
       </div>
 
       {sections.map((section) => (
-        <div key={section.title} className="rounded-lg border border-gray-800 bg-gray-900">
+        <div key={section.title} className="glass-card">
           <div className="border-b border-gray-800 px-6 py-4">
             <h2 className="text-sm font-semibold text-white">{section.title}</h2>
           </div>
@@ -35,13 +35,13 @@ export default function SettingsPage() {
                 <input
                   type={field.type}
                   placeholder={field.placeholder}
-                  className="w-full rounded-md border border-gray-700 bg-gray-800 px-3 py-2 text-sm text-white placeholder-gray-600 focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+                  className="field-input"
                 />
               </div>
             ))}
           </div>
           <div className="flex justify-end border-t border-gray-800 px-6 py-4">
-            <button className="rounded-md bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-500">
+            <button className="btn-cyan">
               Save Changes
             </button>
           </div>
