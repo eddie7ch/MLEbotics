@@ -509,11 +509,9 @@ import '../styles/global.css'
   const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches
 
   // Lightweight A/B experiment for conversion tuning.
-  let heroVariant = sessionStorage.getItem('mle-exp-hero-v2')
-  if (!heroVariant) {
-    heroVariant = Math.random() > 0.5 ? 'control' : 'velocity'
-    sessionStorage.setItem('mle-exp-hero-v2', heroVariant)
-  }
+  const heroVariant =
+    (window as any).mleAssignExperiment?.('hero-v2', ['control', 'velocity']) ||
+    'control'
 
   if (heroVariant === 'velocity') {
     if (heroSub) {

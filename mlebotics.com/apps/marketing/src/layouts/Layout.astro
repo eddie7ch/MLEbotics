@@ -117,20 +117,61 @@ const jsonLd = {
     <!-- Google Analytics 4 -->
     <script async src="https://www.googletagmanager.com/gtag/js?id=G-J9CC0S39GR"></script>
     <script>
+      const MLE_ANALYTICS_SCHEMA = '2026-04-elite-2'
+      const MLE_EXPERIMENT_KEYS = {
+        heroV2: 'mle-exp-hero-v2',
+      }
+
       window.dataLayer = window.dataLayer || [];
       function gtag(){dataLayer.push(arguments);}
       gtag('js', new Date());
       gtag('config', 'G-J9CC0S39GR');
 
+      function getSessionId() {
+        const key = 'mle-analytics-session-id'
+        let current = sessionStorage.getItem(key)
+        if (!current) {
+          current = `mle_${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 8)}`
+          sessionStorage.setItem(key, current)
+        }
+        return current
+      }
+
+      window.mleAssignExperiment = function (experimentName, variants) {
+        const key = `mle-exp-${experimentName}`
+        let variant = sessionStorage.getItem(key)
+        if (!variant) {
+          const idx = Math.floor(Math.random() * variants.length)
+          variant = variants[idx]
+          sessionStorage.setItem(key, variant)
+        }
+        return variant
+      }
+
+      window.mleGetExperiment = function (experimentName) {
+        return sessionStorage.getItem(`mle-exp-${experimentName}`)
+      }
+
       // Unified tracking helper used by CTA/UX experiments across pages.
       window.mleTrack = function (eventName, params = {}) {
         try {
-          gtag('event', eventName, params)
-          window.dataLayer.push({ event: eventName, ...params })
+          const payload = {
+            ...params,
+            schema_version: MLE_ANALYTICS_SCHEMA,
+            session_id: getSessionId(),
+            page_path: window.location.pathname,
+            page_route: document.body.getAttribute('data-route') || 'other',
+            hero_variant: window.mleGetExperiment?.('hero-v2') || 'unassigned',
+            ts_ms: Date.now(),
+          }
+          gtag('event', eventName, payload)
+          window.dataLayer.push({ event: eventName, ...payload })
         } catch {
           // no-op
         }
       }
+
+      window.mleTrack('page_view_custom', { source: 'layout_boot' })
     </script>
   </head>
   <body data-route={pageRouteKey}>
@@ -268,7 +309,7 @@ const jsonLd = {
           const el = node
           const key = el.getAttribute('data-cta') || 'unknown'
           const route = document.body.getAttribute('data-route') || 'other'
-          const variant = sessionStorage.getItem('mle-exp-hero-v2') || 'control'
+          const variant = window.mleGetExperiment?.('hero-v2') || 'control'
           window.mleTrack?.('cta_click', { cta_key: key, route, variant })
         })
       })
