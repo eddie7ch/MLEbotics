@@ -121,6 +121,16 @@ const jsonLd = {
       function gtag(){dataLayer.push(arguments);}
       gtag('js', new Date());
       gtag('config', 'G-J9CC0S39GR');
+
+      // Unified tracking helper used by CTA/UX experiments across pages.
+      window.mleTrack = function (eventName, params = {}) {
+        try {
+          gtag('event', eventName, params)
+          window.dataLayer.push({ event: eventName, ...params })
+        } catch {
+          // no-op
+        }
+      }
     </script>
   </head>
   <body data-route={pageRouteKey}>
@@ -145,33 +155,46 @@ const jsonLd = {
 
     <!-- Scroll-reveal observer + scroll progress + back to top -->
     <script>
+      const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches
+      const saveData = !!(navigator.connection && navigator.connection.saveData)
+      const lowPower = reducedMotion || saveData || (typeof navigator.hardwareConcurrency === 'number' && navigator.hardwareConcurrency <= 4)
+      document.documentElement.setAttribute('data-motion', lowPower ? 'balanced' : 'expressive')
+
       // Scroll-reveal
-      const revealObserver = new IntersectionObserver(
-        (entries) => {
-          entries.forEach((e) => {
-            if (e.isIntersecting) {
-              e.target.classList.add('revealed')
-              revealObserver.unobserve(e.target)
-            }
-          })
-        },
-        { threshold: 0.12 }
-      )
-      document.querySelectorAll('.reveal').forEach((el) => revealObserver.observe(el))
+      if (reducedMotion) {
+        document.querySelectorAll('.reveal').forEach((el) => el.classList.add('revealed'))
+      } else {
+        const revealObserver = new IntersectionObserver(
+          (entries) => {
+            entries.forEach((e) => {
+              if (e.isIntersecting) {
+                e.target.classList.add('revealed')
+                revealObserver.unobserve(e.target)
+              }
+            })
+          },
+          { threshold: 0.12 }
+        )
+        document.querySelectorAll('.reveal').forEach((el) => revealObserver.observe(el))
+      }
 
       // Neural prediction-reveal (foresight mode)
-      const neuralRevealObserver = new IntersectionObserver(
-        (entries) => {
-          entries.forEach((e) => {
-            if (e.isIntersecting) {
-              e.target.classList.add('neural-seen')
-              neuralRevealObserver.unobserve(e.target)
-            }
-          })
-        },
-        { threshold: 0.08, rootMargin: '0px 0px -40px 0px' }
-      )
-      document.querySelectorAll('.neural-reveal').forEach((el) => neuralRevealObserver.observe(el))
+      if (reducedMotion) {
+        document.querySelectorAll('.neural-reveal').forEach((el) => el.classList.add('neural-seen'))
+      } else {
+        const neuralRevealObserver = new IntersectionObserver(
+          (entries) => {
+            entries.forEach((e) => {
+              if (e.isIntersecting) {
+                e.target.classList.add('neural-seen')
+                neuralRevealObserver.unobserve(e.target)
+              }
+            })
+          },
+          { threshold: 0.08, rootMargin: '0px 0px -40px 0px' }
+        )
+        document.querySelectorAll('.neural-reveal').forEach((el) => neuralRevealObserver.observe(el))
+      }
 
       // Scroll progress bar
       const progressBar = document.getElementById('scroll-progress')
@@ -238,6 +261,17 @@ const jsonLd = {
           }
         })
       })
+
+      // CTA instrumentation (conversion funnel + UX experiments)
+      document.querySelectorAll('[data-cta]').forEach((node) => {
+        node.addEventListener('click', () => {
+          const el = node
+          const key = el.getAttribute('data-cta') || 'unknown'
+          const route = document.body.getAttribute('data-route') || 'other'
+          const variant = sessionStorage.getItem('mle-exp-hero-v2') || 'control'
+          window.mleTrack?.('cta_click', { cta_key: key, route, variant })
+        })
+      })
     </script>
 
     <!-- Cursor spotlight -->
@@ -252,6 +286,49 @@ const jsonLd = {
           spotlight.style.setProperty('--cx', e.clientX + 'px')
           spotlight.style.setProperty('--cy', e.clientY + 'px')
         }, { passive: true })
+      })()
+    </script>
+
+    <!-- Elite interaction primitives: hover intent, magnetic buttons, tactile ripple -->
+    <script>
+      ;(function () {
+        const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches
+        const canHover = window.matchMedia('(hover: hover)').matches
+        if (reducedMotion) return
+
+        // Soft spring button press + ripple feedback
+        document.querySelectorAll('button, a.btn-primary, a.btn-outline').forEach((node) => {
+          const el = node
+          el.classList.add('motion-spring')
+          el.addEventListener('pointerdown', (e) => {
+            el.classList.add('is-pressed')
+            const rect = el.getBoundingClientRect()
+            const ripple = document.createElement('span')
+            ripple.className = 'mle-ripple'
+            ripple.style.left = `${e.clientX - rect.left}px`
+            ripple.style.top = `${e.clientY - rect.top}px`
+            el.appendChild(ripple)
+            setTimeout(() => ripple.remove(), 520)
+          })
+          el.addEventListener('pointerup', () => el.classList.remove('is-pressed'))
+          el.addEventListener('pointerleave', () => el.classList.remove('is-pressed'))
+        })
+
+        if (!canHover) return
+
+        // Hover-intent magnetic drift for explicitly marked controls.
+        document.querySelectorAll('[data-magnetic]').forEach((node) => {
+          const el = node
+          el.addEventListener('mousemove', (e) => {
+            const rect = el.getBoundingClientRect()
+            const dx = (e.clientX - rect.left - rect.width / 2) * 0.14
+            const dy = (e.clientY - rect.top - rect.height / 2) * 0.14
+            el.style.transform = `translate3d(${dx}px, ${dy}px, 0)`
+          })
+          el.addEventListener('mouseleave', () => {
+            el.style.transform = ''
+          })
+        })
       })()
     </script>
 
@@ -402,6 +479,20 @@ const jsonLd = {
 </html>
 
 <style is:global>
+  :root {
+    --motion-fast: 160ms;
+    --motion-base: 260ms;
+    --motion-slow: 420ms;
+    --ease-out-premium: cubic-bezier(.16, 1, .3, 1);
+    --ease-spring-premium: cubic-bezier(.22, 1.25, .36, 1);
+  }
+
+  html[data-motion='balanced'] {
+    --motion-fast: 110ms;
+    --motion-base: 180ms;
+    --motion-slow: 260ms;
+  }
+
   .skip-link {
     position: absolute;
     top: -100%;
@@ -685,6 +776,8 @@ const jsonLd = {
   a.btn,
   [role='button'] {
     transition: box-shadow .45s ease, border-color .45s ease;
+    position: relative;
+    overflow: hidden;
   }
   .btn:hover,
   button:not([data-no-neural]):hover,
@@ -736,7 +829,7 @@ const jsonLd = {
   .reveal {
     opacity: 0;
     transform: translateY(28px);
-    transition: opacity .55s cubic-bezier(.22,1,.36,1), transform .55s cubic-bezier(.22,1,.36,1);
+    transition: opacity var(--motion-slow) var(--ease-out-premium), transform var(--motion-slow) var(--ease-out-premium);
   }
   .reveal.revealed {
     opacity: 1;
@@ -819,6 +912,32 @@ const jsonLd = {
     transform: translateX(12px);
     transition: opacity .3s, transform .3s;
     pointer-events: auto;
+  }
+
+  .motion-spring {
+    transition: transform var(--motion-base) var(--ease-spring-premium), box-shadow var(--motion-base) ease, background var(--motion-base) ease;
+    transform: translate3d(0, 0, 0);
+  }
+  .motion-spring.is-pressed {
+    transform: scale(.982);
+  }
+
+  .mle-ripple {
+    position: absolute;
+    width: 10px;
+    height: 10px;
+    border-radius: 999px;
+    background: radial-gradient(circle, rgba(255,255,255,.5), rgba(255,255,255,0));
+    transform: translate(-50%, -50%) scale(0);
+    pointer-events: none;
+    animation: mle-ripple-expand .52s ease-out forwards;
+    z-index: 1;
+  }
+  @keyframes mle-ripple-expand {
+    to {
+      transform: translate(-50%, -50%) scale(16);
+      opacity: 0;
+    }
   }
   .toast--visible { opacity: 1; transform: none; }
   .toast--success { background: rgba(0,255,136,.18); border-color: rgba(0,255,136,.3); }

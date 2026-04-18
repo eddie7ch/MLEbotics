@@ -20,13 +20,13 @@ import '../styles/global.css'
           <span id="typewriter" aria-live="polite"></span><br />
           <span class="gradient-text">Build smarter tools.</span>
         </h1>
-        <p class="hero__sub">
+        <p class="hero__sub" id="hero-sub">
           MLEbotics designs premium AI, automation, and robotics systems that feel
           fast, dependable, and deeply intentional from day one.
         </p>
         <div class="hero__cta">
-          <a href="/projects" class="btn-primary" id="hero-cta-primary">See our projects</a>
-          <a href="/about" class="btn-outline" id="hero-cta-outline">About us</a>
+          <a href="/projects" class="btn-primary" id="hero-cta-primary" data-cta="hero_primary_projects" data-magnetic>See our projects</a>
+          <a href="/about" class="btn-outline" id="hero-cta-outline" data-cta="hero_secondary_about" data-magnetic>About us</a>
         </div>
         <div class="hero-proof reveal reveal-delay-2" aria-label="Delivery highlights">
           <div class="hero-proof__item">
@@ -367,7 +367,7 @@ import '../styles/global.css'
           </a>
         </div>
         <div style="margin-top:2.5rem;text-align:center;">
-          <a href="/projects" class="btn-outline">View all projects &rarr;</a>
+          <a href="/projects" class="btn-outline" data-cta="projects_view_all" data-magnetic>View all projects &rarr;</a>
         </div>
       </div>
     </section>
@@ -378,7 +378,7 @@ import '../styles/global.css'
         <div class="cta-banner">
           <h2>See it in action</h2>
           <p>Explore the live dashboard to track projects, robots, and workflows in real time.</p>
-          <a href="https://console.mlebotics.com" class="btn-primary">Open dashboard &rarr;</a>
+          <a href="https://console.mlebotics.com" class="btn-primary" data-cta="dashboard_open" data-magnetic>Open dashboard &rarr;</a>
         </div>
       </div>
     </section>
@@ -470,7 +470,7 @@ import '../styles/global.css'
             <p class="tag">Community</p>
             <h2 class="section__h2" style="margin-bottom:.75rem;">Build with us</h2>
             <p class="community-desc">Ask questions, share what you're building, show off projects, and connect with other MLEbotics builders — all in one place.</p>
-            <button id="open-chat-btn" class="btn-primary community-btn">
+            <button id="open-chat-btn" class="btn-primary community-btn" data-cta="community_open_chat" data-magnetic>
               <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
               Open Community Chat
             </button>
@@ -492,15 +492,39 @@ import '../styles/global.css'
 </Layout>
 
 <script>
+  const track = (name: string, params: Record<string, string | number> = {}) => {
+    ;(window as any).mleTrack?.(name, params)
+  }
+
   // Typewriter
   const phrases = ['Remove friction.', 'Build AI agents.', 'Ship robotics tools.', 'Automate everything.', 'Remove friction.']
   const el = document.getElementById('typewriter')
+  const heroSub = document.getElementById('hero-sub')
+  const heroPrimaryCta = document.getElementById('hero-cta-primary')
   let phraseIdx = 0
   let charIdx = 0
   let deleting = false
   let pauseFrames = 0
   const lowMotionMobile = window.matchMedia('(max-width: 860px)').matches
   const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches
+
+  // Lightweight A/B experiment for conversion tuning.
+  let heroVariant = sessionStorage.getItem('mle-exp-hero-v2')
+  if (!heroVariant) {
+    heroVariant = Math.random() > 0.5 ? 'control' : 'velocity'
+    sessionStorage.setItem('mle-exp-hero-v2', heroVariant)
+  }
+
+  if (heroVariant === 'velocity') {
+    if (heroSub) {
+      heroSub.textContent = 'Launch faster with production-grade AI, automation, and robotics systems that feel intentional from day one.'
+    }
+    if (heroPrimaryCta) {
+      heroPrimaryCta.textContent = 'Start with case studies'
+    }
+  }
+
+  track('hero_variant_seen', { variant: heroVariant })
 
   if (lowMotionMobile || reducedMotion) {
     if (el) el.textContent = phrases[0]
@@ -629,6 +653,7 @@ import '../styles/global.css'
       const mode = (btn as HTMLElement).dataset.mode as keyof typeof modeContent
       if (!mode || !modeContent[mode]) return
       applyMode(mode)
+      track('control_room_mode_change', { mode })
     })
   })
 
@@ -642,6 +667,7 @@ import '../styles/global.css'
     if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return
     form.style.display = 'none'
     if (confirm) confirm.hidden = false
+    track('waitlist_signup', { source: 'homepage_waitlist', variant: heroVariant || 'control' })
   })
 
   // 3D card tilt effect
@@ -662,22 +688,21 @@ import '../styles/global.css'
       })
     })
 
-    // Magnetic CTA buttons
-    document.querySelectorAll('#hero-cta-primary, #hero-cta-outline').forEach((btn) => {
-      const el = btn as HTMLElement
-      el.addEventListener('mousemove', (e) => {
-        const rect = el.getBoundingClientRect()
-        const x = (e.clientX - rect.left - rect.width / 2) * 0.28
-        const y = (e.clientY - rect.top - rect.height / 2) * 0.28
-        el.style.transform = `translate(${x}px, ${y}px)`
-        el.style.transition = 'transform .1s ease-out, box-shadow .1s, background .15s'
-      })
-      el.addEventListener('mouseleave', () => {
-        el.style.transition = 'transform .45s cubic-bezier(.22,1,.36,1), box-shadow .22s, background .15s'
-        el.style.transform = 'translate(0, 0)'
-      })
-    })
   }
+
+  const depthMarks = [20, 50, 80]
+  const seenDepth = new Set<number>()
+  window.addEventListener('scroll', () => {
+    const total = document.documentElement.scrollHeight - window.innerHeight
+    if (total <= 0) return
+    const pct = Math.round((window.scrollY / total) * 100)
+    depthMarks.forEach((mark) => {
+      if (pct >= mark && !seenDepth.has(mark)) {
+        seenDepth.add(mark)
+        track('scroll_depth', { depth_percent: mark, page: 'home' })
+      }
+    })
+  }, { passive: true })
 </script>
 
 

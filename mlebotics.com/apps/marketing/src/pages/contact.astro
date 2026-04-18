@@ -67,12 +67,12 @@ import Footer from '@components/Footer.astro'
               <label for="message">Message</label>
               <textarea id="message" name="message" rows="5" placeholder="Tell us what's on your mind…" required></textarea>
             </div>
-            <button type="submit" class="btn-primary contact-submit">Send message &rarr;</button>
-            <div class="contact-confirm" id="contact-confirm" hidden>
+            <button type="submit" class="btn-primary contact-submit" data-cta="contact_submit_brief" data-magnetic>Send message &rarr;</button>
+            <div class="contact-confirm" id="contact-confirm" hidden role="status" aria-live="polite">
               <p>Draft prepared. Choose one of the options below.</p>
               <div class="contact-confirm__actions">
-                <a href="#" id="contact-mailto" class="btn-primary btn--sm">Open email draft</a>
-                <button type="button" id="contact-copy" class="btn-outline btn--sm">Copy brief</button>
+                <a href="#" id="contact-mailto" class="btn-primary btn--sm" data-cta="contact_open_mailto" data-magnetic>Open email draft</a>
+                <button type="button" id="contact-copy" class="btn-outline btn--sm" data-cta="contact_copy_brief" data-magnetic>Copy brief</button>
               </div>
             </div>
           </form>
@@ -115,6 +115,10 @@ import Footer from '@components/Footer.astro'
 </Layout>
 
 <script>
+  const track = (name: string, params: Record<string, string | number> = {}) => {
+    ;(window as any).mleTrack?.(name, params)
+  }
+
   const form = document.getElementById('contact-form') as HTMLFormElement | null
   const confirm = document.getElementById('contact-confirm') as HTMLElement | null
   const confirmMailto = document.getElementById('contact-mailto') as HTMLAnchorElement | null
@@ -131,7 +135,10 @@ import Footer from '@components/Footer.astro'
     const timeline = (data.get('timeline') as string)?.trim()
     const message = (data.get('message') as string)?.trim()
     if (!name || !email || !message) return
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      track('contact_validation_error', { reason: 'invalid_email' })
+      return
+    }
 
     if (submitBtn) {
       submitBtn.disabled = true
@@ -155,14 +162,30 @@ import Footer from '@components/Footer.astro'
     if (typeof window.showToast === 'function') {
       window.showToast('Your message draft is ready.', 'success', 2800)
     }
+
+    track('contact_brief_prepared', {
+      subject: subjectValue,
+      timeline: timeline || 'unknown',
+    })
   })
 
   confirmCopy?.addEventListener('click', async () => {
     if (!preparedBody) return
-    await navigator.clipboard.writeText(preparedBody)
-    if (typeof window.showToast === 'function') {
-      window.showToast('Brief copied to clipboard.', 'info', 2600)
+    try {
+      await navigator.clipboard.writeText(preparedBody)
+      if (typeof window.showToast === 'function') {
+        window.showToast('Brief copied to clipboard.', 'info', 2600)
+      }
+      track('contact_brief_copied', { source: 'contact_page' })
+    } catch {
+      if (typeof window.showToast === 'function') {
+        window.showToast('Could not copy. Use Open email draft instead.', 'error', 3000)
+      }
     }
+  })
+
+  confirmMailto?.addEventListener('click', () => {
+    track('contact_mailto_opened', { source: 'contact_page' })
   })
 </script>
 

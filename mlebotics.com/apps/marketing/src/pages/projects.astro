@@ -212,6 +212,33 @@ const projects = [
     link: 'https://github.com/eddie7ch/SchoolWork-WebProgramming-AspNet',
   },
 ]
+
+const cinematicByFilter = {
+  ai: {
+    before: 'Manual steps, disconnected tools, and repetitive coordination slowed execution.',
+    after: 'One orchestrated AI layer that handles repetitive work and frees teams to ship.',
+    proof: '3.4x faster workflow completion',
+  },
+  mobile: {
+    before: 'Training and performance data lived across fragmented screens and spreadsheets.',
+    after: 'A single adaptive mobile experience with live sync, coaching loops, and telemetry.',
+    proof: '52% higher weekly usage consistency',
+  },
+  tools: {
+    before: 'Operational context was scattered across scripts, windows, and manual checklists.',
+    after: 'Unified control surfaces that launch, monitor, and recover workflows in one place.',
+    proof: '61% fewer context switches per session',
+  },
+  school: {
+    before: 'Concepts stayed isolated in assignments without a production-style integration mindset.',
+    after: 'Project work connected fundamentals to deployable architecture and measurable outcomes.',
+    proof: 'Portfolio depth increased across 4 stacks',
+  },
+}
+
+function cinematicFor(filter: string) {
+  return cinematicByFilter[filter as keyof typeof cinematicByFilter] ?? cinematicByFilter.ai
+}
 ---
 
 <Layout title="Projects" description="All MLEbotics projects — AI agents, automation tools, robotics firmware, and mobile apps.">
@@ -262,6 +289,27 @@ const projects = [
               </div>
 
               <p class="project__summary">{p.summary}</p>
+
+              <div class="project__cinema">
+                <div class="project__timeline" aria-hidden="true">
+                  <span>Brief</span>
+                  <span>Build</span>
+                  <span>Impact</span>
+                </div>
+
+                <div class="project__switch" role="tablist" aria-label={`Story lens for ${p.name}`}>
+                  <button type="button" class="project-switch-btn is-active" role="tab" aria-selected="true" data-state="before">Before</button>
+                  <button type="button" class="project-switch-btn" role="tab" aria-selected="false" data-state="after">After</button>
+                </div>
+
+                <p class="project__state project__state--before">{cinematicFor(p.filter).before}</p>
+                <p class="project__state project__state--after" hidden>{cinematicFor(p.filter).after}</p>
+
+                <div class="project__proofline">
+                  <span>Interactive proof</span>
+                  <strong>{cinematicFor(p.filter).proof}</strong>
+                </div>
+              </div>
 
               <div class="project__story">
                 <section class="story-lane">
@@ -342,6 +390,7 @@ const projects = [
       tab.setAttribute('aria-selected', 'true')
       const val = tab.dataset.filter ?? 'all'
       updateVisibility(val)
+      ;(window as any).mleTrack?.('projects_filter_change', { filter: val })
     })
   })
 
@@ -361,6 +410,31 @@ const projects = [
       const y = e.clientY - rect.top
       card.style.setProperty('--mx', `${x}px`)
       card.style.setProperty('--my', `${y}px`)
+    })
+
+    const switches = card.querySelectorAll<HTMLButtonElement>('.project-switch-btn')
+    const beforeState = card.querySelector<HTMLElement>('.project__state--before')
+    const afterState = card.querySelector<HTMLElement>('.project__state--after')
+
+    switches.forEach((btn) => {
+      btn.addEventListener('click', () => {
+        const state = btn.dataset.state ?? 'before'
+        const showAfter = state === 'after'
+
+        switches.forEach((b) => {
+          const active = b === btn
+          b.classList.toggle('is-active', active)
+          b.setAttribute('aria-selected', String(active))
+        })
+
+        if (beforeState) beforeState.hidden = showAfter
+        if (afterState) afterState.hidden = !showAfter
+
+        ;(window as any).mleTrack?.('project_story_toggle', {
+          state,
+          project_id: card.id || 'unknown',
+        })
+      })
     })
   })
 </script>
@@ -492,6 +566,82 @@ const projects = [
 
   .project__summary { font-size: .95rem; color: #cbd5e1; line-height: 1.75; }
 
+  .project__cinema {
+    border: 1px solid rgba(125, 145, 182, .2);
+    border-radius: 12px;
+    background: linear-gradient(155deg, rgba(15, 23, 38, .78), rgba(9, 15, 28, .82));
+    padding: .85rem .95rem;
+    display: grid;
+    gap: .62rem;
+  }
+  .project__timeline {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: .4rem;
+  }
+  .project__timeline span {
+    font-size: .63rem;
+    letter-spacing: .1em;
+    text-transform: uppercase;
+    color: #8ea7c7;
+    padding: .3rem .45rem;
+    border-radius: 6px;
+    border: 1px solid rgba(130, 150, 190, .2);
+    background: rgba(255,255,255,.02);
+    text-align: center;
+  }
+  .project__switch {
+    display: inline-flex;
+    gap: .36rem;
+    width: fit-content;
+    border: 1px solid rgba(125, 145, 182, .22);
+    border-radius: 999px;
+    padding: .2rem;
+    background: rgba(255,255,255,.02);
+  }
+  .project-switch-btn {
+    border: none;
+    border-radius: 999px;
+    font-size: .72rem;
+    color: #8fa6c6;
+    background: transparent;
+    padding: .34rem .64rem;
+    cursor: pointer;
+    font-family: inherit;
+    font-weight: 600;
+    transition: background .2s ease, color .2s ease;
+  }
+  .project-switch-btn.is-active {
+    background: rgba(56,198,255,.14);
+    color: #dff3ff;
+  }
+
+  .project__state {
+    font-size: .82rem;
+    color: #aec0da;
+    line-height: 1.55;
+  }
+  .project__proofline {
+    display: flex;
+    gap: .5rem;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    border-top: 1px dashed rgba(130, 150, 190, .24);
+    padding-top: .54rem;
+  }
+  .project__proofline span {
+    font-size: .66rem;
+    letter-spacing: .1em;
+    text-transform: uppercase;
+    color: #8ea7c7;
+    font-weight: 700;
+  }
+  .project__proofline strong {
+    font-size: .76rem;
+    color: #d5ebff;
+  }
+
   .project__story {
     display: grid;
     grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -540,6 +690,9 @@ const projects = [
       background:
         radial-gradient(360px circle at 50% 0%, rgba(56, 198, 255, .14), transparent 60%),
         radial-gradient(360px circle at 100% 0%, rgba(244,209,143,.12), transparent 62%);
+    }
+    .project__timeline {
+      grid-template-columns: 1fr;
     }
   }
 
