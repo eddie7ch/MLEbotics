@@ -10,6 +10,7 @@ const projects = [
     name: 'RunCompanion',
     isExternalSite: true,
     category: 'mlebotics',
+    filter: 'mobile',
     status: 'active',
     stack: ['Flutter', 'Firebase', 'Dart'],
     summary: 'AI-powered running coach and tracker. Plans training sessions, monitors pace and heart-rate zones, and syncs with robotics training hardware via Bluetooth.',
@@ -28,6 +29,7 @@ const projects = [
     name: 'PacerPro',
     isExternalSite: true,
     category: 'mlebotics',
+    filter: 'mobile',
     status: 'active',
     stack: ['Flutter', 'Dart'],
     summary: 'Running pace calculator built into RunCompanion. Enter a target race time or distance and instantly get per-km/mile splits, finish time projections, and training pace zones.',
@@ -44,6 +46,7 @@ const projects = [
     id: 'autoformfiller',
     name: 'AutoFormFiller',
     category: 'mlebotics',
+    filter: 'ai',
     status: 'active',
     stack: ['Python', 'Flask', 'Chrome Extension', 'OpenAI'],
     summary: 'Chrome extension + Python backend that reads web forms and fills them automatically using AI — built primarily for job applications and event registrations.',
@@ -60,6 +63,7 @@ const projects = [
     id: 'hey-girl',
     name: 'Hey Girl',
     category: 'mlebotics',
+    filter: 'ai',
     status: 'active',
     stack: ['Python', 'OpenAI', 'Telegram', 'Tkinter'],
     summary: 'Voice and text AI assistant for Windows. Handles tasks, reads and summarizes assignments, solves quizzes, and answers questions with full conversation memory.',
@@ -76,6 +80,7 @@ const projects = [
     id: 'computer-use',
     name: 'Computer Use Agent',
     category: 'mlebotics',
+    filter: 'ai',
     status: 'wip',
     stack: ['Python', 'Anthropic', 'Claude'],
     summary: 'Anthropic-powered AI desktop agent that sees your screen via screenshots and performs tasks like a human operator — click, type, navigate, and more.',
@@ -92,6 +97,7 @@ const projects = [
     id: 'mlebotics-hub',
     name: 'MLEbotics Hub',
     category: 'mlebotics',
+    filter: 'tools',
     status: 'active',
     stack: ['Python', 'PyInstaller', 'Tkinter'],
     summary: 'Unified launcher and dashboard for all MLEbotics tools. Single packaged Windows app for managing, starting, and monitoring all local agents and services.',
@@ -107,6 +113,7 @@ const projects = [
     id: 'chromashift',
     name: 'ChromaShift',
     category: 'mlebotics',
+    filter: 'tools',
     status: 'potential',
     stack: ['Accessibility', 'Computer Vision', 'UI/UX'],
     summary: 'Accessibility tool that converts software interfaces for colour-blind users — removing colour-dependent cues and adapting UI elements so red-green colour blind people can work without difficulty identifying colours.',
@@ -123,6 +130,7 @@ const projects = [
     id: 'mleminimalist',
     name: 'MLEminimalist',
     category: 'mlebotics',
+    filter: 'tools',
     status: 'potential',
     stack: ['Productivity', 'Mindfulness', 'Tech'],
     summary: 'A minimalist life system powered by technology. Designed to reduce distractions, simplify daily tasks, and help you do more with less — technology that gets out of your way.',
@@ -139,6 +147,7 @@ const projects = [
     id: 'movie-browser',
     name: 'Movie Browser App',
     category: 'school',
+    filter: 'school',
     status: 'active',
     stack: ['React', 'React Router', 'CSS Modules', 'TMDB API'],
     summary: 'SPA movie browser using the TMDB API. Features top-rated listings, search, genre filtering, pagination, and a detailed overlay via React Portals.',
@@ -155,6 +164,7 @@ const projects = [
     id: 'oop-projects',
     name: 'OOP Concepts (C#)',
     category: 'school',
+    filter: 'school',
     status: 'active',
     stack: ['C#', '.NET', 'Visual Studio'],
     summary: 'Collection of object-oriented programming assignments and projects in C# — covering inheritance, polymorphism, interfaces, LINQ, and design patterns.',
@@ -171,6 +181,7 @@ const projects = [
     id: 'intro-to-cloud',
     name: 'Intro to Cloud (AWS)',
     category: 'school',
+    filter: 'school',
     status: 'active',
     stack: ['AWS', 'EC2', 'S3', 'Lambda', 'CloudFormation'],
     summary: 'Series of AWS cloud projects — deploying and managing infrastructure, serverless functions, storage, and networking through Bow Valley College coursework.',
@@ -187,6 +198,7 @@ const projects = [
     id: 'aspnet-projects',
     name: 'ASP.NET Web Projects',
     category: 'school',
+    filter: 'school',
     status: 'active',
     stack: ['ASP.NET', 'C#', 'Razor Pages', 'Entity Framework', 'SQL Server'],
     summary: 'Web applications built with ASP.NET Core — covering MVC architecture, Razor Pages, Entity Framework ORM, and REST API development.',
@@ -210,27 +222,68 @@ const projects = [
       <div class="container">
         <p class="tag">What we've built</p>
         <h1 class="page-h1">Projects</h1>
-        <p class="page-sub">Every tool here solves a real problem. No demos for the sake of demos.</p>
+        <p class="page-sub">Every product here is built from a real workflow problem. Explore each case with the story behind the build, system, and impact.</p>
 
-        <div class="filter-row">
-          <select id="cat-filter" class="cat-select">
-            <option value="all">All projects</option>
-            <option value="mlebotics">MLEbotics</option>
-            <option value="school">School</option>
-          </select>
+        <div class="projects-metrics">
+          <div class="projects-metric">
+            <span>Products shipped</span>
+            <strong>{projects.length}</strong>
+          </div>
+          <div class="projects-metric">
+            <span>Core focus</span>
+            <strong>AI + automation + robotics</strong>
+          </div>
+          <div class="projects-metric">
+            <span>Delivery style</span>
+            <strong>Lean, production-first, measurable</strong>
+          </div>
+        </div>
+
+        <div class="filter-bar" role="tablist">
+          <button class="filter-tab filter-tab--active" data-filter="all"   role="tab" aria-selected="true">All</button>
+          <button class="filter-tab" data-filter="ai"     role="tab">AI</button>
+          <button class="filter-tab" data-filter="mobile" role="tab">Mobile</button>
+          <button class="filter-tab" data-filter="tools"  role="tab">Tools</button>
+          <button class="filter-tab" data-filter="school" role="tab">School</button>
+        </div>
         </div>
 
         <div class="projects" id="projects-list">
           {projects.map(p => (
-            <article id={p.id} class="card project" data-category={p.category}>
+            <article id={p.id} class="card project cinematic" data-category={p.category} data-filter={p.filter}>
+              <div class="project__glow" aria-hidden="true"></div>
+
               <div class="project__head">
-                <h2>{p.name}</h2>
+                <div>
+                  <p class="project__eyebrow">Case study</p>
+                  <h2>{p.name}</h2>
+                </div>
                 <span class={`status ${p.status}`}>{p.status === 'active' ? 'Active' : p.status === 'wip' ? 'In Progress' : 'Potential'}</span>
               </div>
+
               <p class="project__summary">{p.summary}</p>
-              <ul class="project__details">
-                {p.details.map(d => <li>{d}</li>)}
-              </ul>
+
+              <div class="project__story">
+                <section class="story-lane">
+                  <h3>Problem</h3>
+                  <ul class="project__details">
+                    {p.details.slice(0, 2).map(d => <li>{d}</li>)}
+                  </ul>
+                </section>
+                <section class="story-lane">
+                  <h3>System</h3>
+                  <ul class="project__details">
+                    {p.details.slice(2, 4).map(d => <li>{d}</li>)}
+                  </ul>
+                </section>
+                <section class="story-lane">
+                  <h3>Impact</h3>
+                  <ul class="project__details">
+                    {(p.details.slice(4, 5).length ? p.details.slice(4, 5) : p.details.slice(0, 1)).map(d => <li>{d}</li>)}
+                  </ul>
+                </section>
+              </div>
+
               <div class="project__foot">
                 <div class="stack">
                   {p.stack.map(s => <span class="chip">{s}</span>)}
@@ -255,40 +308,178 @@ const projects = [
 </Layout>
 
 <script>
-  const select = document.getElementById('cat-filter') as HTMLSelectElement
+  const tabs  = document.querySelectorAll<HTMLElement>('.filter-tab')
   const cards = document.querySelectorAll<HTMLElement>('#projects-list .project')
-  select.addEventListener('change', () => {
-    const val = select.value
+  const lowMotionMobile = window.matchMedia('(max-width: 900px)').matches
+  const transitionHideDelay = lowMotionMobile ? 150 : 220
+  const filterStaggerStep = lowMotionMobile ? 34 : 55
+  const initialStaggerStep = lowMotionMobile ? 40 : 60
+
+  function updateVisibility(filter: string) {
+    let visibleIndex = 0
     cards.forEach(card => {
-      card.style.display = (val === 'all' || card.dataset.category === val) ? '' : 'none'
+      const show = filter === 'all' || card.dataset.filter === filter
+      if (show) {
+        card.style.display = ''
+        requestAnimationFrame(() => {
+          card.classList.remove('is-hidden')
+          card.style.setProperty('--stagger', `${visibleIndex * filterStaggerStep}ms`)
+        })
+        visibleIndex += 1
+      } else {
+        card.classList.add('is-hidden')
+        setTimeout(() => {
+          if (card.classList.contains('is-hidden')) card.style.display = 'none'
+        }, transitionHideDelay)
+      }
+    })
+  }
+
+  tabs.forEach(tab => {
+    tab.addEventListener('click', () => {
+      tabs.forEach(t => { t.classList.remove('filter-tab--active'); t.setAttribute('aria-selected', 'false') })
+      tab.classList.add('filter-tab--active')
+      tab.setAttribute('aria-selected', 'true')
+      const val = tab.dataset.filter ?? 'all'
+      updateVisibility(val)
+    })
+  })
+
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach((entry) => {
+      if (entry.isIntersecting) entry.target.classList.add('in-view')
+    })
+  }, { threshold: 0.2 })
+
+  cards.forEach((card, i) => {
+    card.style.setProperty('--stagger', `${i * initialStaggerStep}ms`)
+    observer.observe(card)
+
+    card.addEventListener('mousemove', (e) => {
+      const rect = card.getBoundingClientRect()
+      const x = e.clientX - rect.left
+      const y = e.clientY - rect.top
+      card.style.setProperty('--mx', `${x}px`)
+      card.style.setProperty('--my', `${y}px`)
     })
   })
 </script>
 
 <style>
-  .page-h1  { font-size: clamp(2rem,4vw,3rem); font-weight: 700; color: #fff; margin-bottom: .75rem; }
-  .page-sub { font-size: 1rem; color: var(--muted); margin-bottom: 2rem; max-width: 480px; }
+  .page-h1  { font-size: clamp(2rem,4vw,3rem); font-weight: 800; color: #fff; margin-bottom: .75rem; letter-spacing: -.02em; }
+  .page-sub { font-size: 1rem; color: var(--muted); margin-bottom: 1.2rem; max-width: 680px; line-height: 1.75; }
 
-  .filter-row { margin-bottom: 2.5rem; }
-  .cat-select {
-    appearance: none;
-    background: var(--surface, #0f172a);
-    color: #e2e8f0;
-    border: 1px solid rgba(0,212,255,.25);
+  .projects-metrics {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: .65rem;
+    margin-bottom: 1.7rem;
+  }
+  .projects-metric {
+    border: 1px solid rgba(128, 151, 187, .2);
+    border-radius: 12px;
+    padding: .72rem .85rem;
+    background: linear-gradient(165deg, rgba(20, 30, 49, .62), rgba(9, 16, 29, .72));
+    display: flex;
+    flex-direction: column;
+    gap: .18rem;
+  }
+  .projects-metric span {
+    font-size: .62rem;
+    text-transform: uppercase;
+    letter-spacing: .1em;
+    color: #8ea7c7;
+    font-weight: 700;
+  }
+  .projects-metric strong {
+    font-size: .84rem;
+    color: #e7efff;
+  }
+
+  /* Filter tabs */
+  .filter-bar {
+    display: flex;
+    gap: .4rem;
+    flex-wrap: wrap;
+    margin-bottom: 2.5rem;
+    background: rgba(255,255,255,.03);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: .35rem;
+    width: fit-content;
+  }
+  .filter-tab {
+    background: none;
+    border: none;
     border-radius: 8px;
-    padding: .55rem 2.4rem .55rem 1rem;
-    font-size: .875rem;
+    padding: .5rem 1.1rem;
+    font-size: .82rem;
+    font-weight: 600;
+    color: var(--muted);
     font-family: inherit;
     cursor: pointer;
-    outline: none;
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%2300d4ff' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");
-    background-repeat: no-repeat;
-    background-position: right .75rem center;
-    transition: border-color .15s;
+    transition: color .15s, background .15s;
+    white-space: nowrap;
   }
-  .cat-select:hover, .cat-select:focus { border-color: var(--cyan); }
+  .filter-tab:hover { color: #e2e8f0; background: rgba(255,255,255,.05); }
+  .filter-tab--active {
+    background: rgba(0,212,255,.1);
+    color: var(--cyan);
+    box-shadow: 0 0 0 1px rgba(0,212,255,.25);
+  }
+  .filter-tab--active:hover { background: rgba(0,212,255,.14); }
 
-  .projects { display: flex; flex-direction: column; gap: 1.5rem; }
+  .projects { display: flex; flex-direction: column; gap: 1.15rem; }
+
+  .project {
+    position: relative;
+    overflow: hidden;
+    isolation: isolate;
+    opacity: 0;
+    transform: translateY(18px) scale(.985);
+    transition:
+      opacity .55s cubic-bezier(.22,1,.36,1),
+      transform .55s cubic-bezier(.22,1,.36,1),
+      border-color .25s;
+    transition-delay: var(--stagger, 0ms);
+  }
+  .project.in-view {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+  .project.is-hidden {
+    opacity: 0;
+    transform: translateY(12px) scale(.985);
+    pointer-events: none;
+  }
+
+  .project__glow {
+    position: absolute;
+    inset: -1px;
+    border-radius: inherit;
+    background:
+      radial-gradient(420px circle at var(--mx, 15%) var(--my, 35%), rgba(56, 198, 255, .2), transparent 55%),
+      radial-gradient(420px circle at 100% 0%, rgba(244,209,143,.18), transparent 58%);
+    opacity: .35;
+    pointer-events: none;
+    z-index: -1;
+    transition: opacity .25s ease;
+  }
+  .project:hover {
+    border-color: rgba(116,209,255,.28);
+  }
+  .project:hover .project__glow {
+    opacity: .58;
+  }
+
+  .project__eyebrow {
+    font-size: .64rem;
+    letter-spacing: .11em;
+    text-transform: uppercase;
+    color: #8ea7c7;
+    margin-bottom: .28rem;
+    font-weight: 700;
+  }
 
   .project { display: flex; flex-direction: column; gap: 1rem; }
   .project__head { display: flex; align-items: center; gap: 1rem; flex-wrap: wrap; }
@@ -301,8 +492,27 @@ const projects = [
 
   .project__summary { font-size: .95rem; color: #cbd5e1; line-height: 1.75; }
 
+  .project__story {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: .65rem;
+  }
+  .story-lane {
+    border: 1px solid rgba(130, 150, 190, .18);
+    border-radius: 10px;
+    background: linear-gradient(150deg, rgba(15, 23, 39, .7), rgba(11, 17, 29, .76));
+    padding: .72rem .78rem;
+  }
+  .story-lane h3 {
+    font-size: .62rem;
+    letter-spacing: .09em;
+    text-transform: uppercase;
+    margin-bottom: .45rem;
+    color: #98b2d4;
+  }
+
   .project__details { list-style: none; display: flex; flex-direction: column; gap: .4rem; }
-  .project__details li { font-size: .875rem; color: var(--muted); padding-left: 1.1rem; position: relative; }
+  .project__details li { font-size: .83rem; color: var(--muted); padding-left: 1.1rem; position: relative; line-height: 1.45; }
   .project__details li::before { content: '→'; position: absolute; left: 0; color: var(--cyan); font-size: .8rem; }
 
   .project__foot { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 1rem; margin-top: .5rem; }
@@ -310,4 +520,33 @@ const projects = [
   .stack { display: flex; flex-wrap: wrap; gap: .4rem; }
   .chip { font-size: .7rem; font-weight: 500; color: var(--cyan); border: 1px solid rgba(0,212,255,.25); border-radius: 6px; padding: .2rem .55rem; }
   .btn--sm { padding: .45rem 1rem; font-size: .8rem; }
+
+  @media (max-width: 900px) {
+    .projects-metrics {
+      grid-template-columns: 1fr;
+    }
+    .project__story {
+      grid-template-columns: 1fr;
+    }
+    .project {
+      transform: translateY(10px) scale(.995);
+      transition-duration: .34s;
+    }
+    .project.is-hidden {
+      transform: translateY(8px) scale(.995);
+    }
+    .project__glow {
+      opacity: .2;
+      background:
+        radial-gradient(360px circle at 50% 0%, rgba(56, 198, 255, .14), transparent 60%),
+        radial-gradient(360px circle at 100% 0%, rgba(244,209,143,.12), transparent 62%);
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .project,
+    .project__glow {
+      transition: none;
+    }
+  }
 </style>

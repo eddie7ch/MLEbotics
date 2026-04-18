@@ -1,0 +1,120 @@
+---
+import Layout from '@layouts/Layout.astro'
+import Header from '@components/Header.astro'
+import Footer from '@components/Footer.astro'
+
+const values = [
+  { icon: '🔧', title: 'Ship fast, iterate often', desc: 'We value working software over perfect plans. Build, release, learn, improve.' },
+  { icon: '🌐', title: 'Open by default', desc: 'Everything we build is open source. Transparency is not a policy — it is how we work.' },
+  { icon: '🤝', title: 'Async-first', desc: 'We communicate clearly in writing. Remote-friendly, timezone-flexible, outcome-focused.' },
+  { icon: '🧠', title: 'Learn in public', desc: 'Blog, share, document. We are proud of the process, not just the outcome.' },
+]
+---
+
+<Layout title="Careers" description="Join MLEbotics — work on AI agents, robotics tools, and automation systems.">
+  <Header />
+  <main id="main-content">
+    <div class="container careers-page">
+
+      <!-- Hero -->
+      <div class="careers-hero">
+        <p class="tag">Work with us</p>
+        <h1>Build the future of<br /><span class="gradient-text">AI-powered tools</span></h1>
+        <p class="careers-sub">MLEbotics is a small, ambitious team building open-source AI agents, automation systems, and robotics apps. We move fast and care deeply about our craft.</p>
+      </div>
+
+      <!-- Values -->
+      <section class="careers-section reveal">
+        <h2 class="careers-section-title">How we work</h2>
+        <div class="values-grid">
+          {values.map(v => (
+            <div class="value-card card">
+              <span class="value-icon" aria-hidden="true">{v.icon}</span>
+              <h3>{v.title}</h3>
+              <p>{v.desc}</p>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      <!-- Roles -->
+      <section class="careers-section reveal">
+        <h2 class="careers-section-title">Open roles</h2>
+        <div class="roles-box card">
+          <div class="no-roles">
+            <span class="no-roles-icon" aria-hidden="true">🔭</span>
+            <h3>No open positions right now</h3>
+            <p>We are a small, self-funded team. When we're ready to grow, this is where we will post first.</p>
+            <p class="no-roles-sub">In the meantime, feel free to contribute to any of our <a href="https://github.com/MLEbotics" target="_blank" rel="noopener noreferrer" class="text-link">open-source repositories</a> — it is the best way to get on our radar.</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- Get in touch -->
+      <section class="careers-section reveal">
+        <div class="careers-cta card">
+          <div class="careers-cta__text">
+            <h2>Interested in collaborating?</h2>
+            <p>If you are a developer, designer, or researcher excited about AI and robotics, we'd love to hear from you — even if there are no open roles.</p>
+          </div>
+          <a href="/contact" class="btn-primary careers-cta__btn">Get in touch &rarr;</a>
+        </div>
+      </section>
+
+    </div>
+  </main>
+  <Footer />
+</Layout>
+
+<style>
+  .careers-page {
+    padding-top: 5rem;
+    padding-bottom: 6rem;
+    max-width: 900px;
+  }
+  .careers-hero { margin-bottom: 4.5rem; }
+  .careers-hero h1 {
+    font-size: clamp(2rem, 5vw, 3.2rem);
+    font-weight: 700;
+    color: #fff;
+    line-height: 1.15;
+    margin-bottom: .85rem;
+  }
+  .careers-sub { font-size: 1rem; color: var(--muted); line-height: 1.8; max-width: 560px; }
+  .careers-section { margin-bottom: 3.5rem; }
+  .careers-section-title {
+    font-size: 1.3rem;
+    font-weight: 700;
+    color: #fff;
+    margin-bottom: 1.5rem;
+  }
+
+  /* Values */
+  .values-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; }
+  .value-card { display: flex; flex-direction: column; gap: .6rem; padding: 1.5rem; }
+  .value-icon { font-size: 1.5rem; }
+  .value-card h3 { font-size: .9rem; font-weight: 700; color: #fff; }
+  .value-card p { font-size: .85rem; color: var(--muted); line-height: 1.7; }
+
+  /* No roles */
+  .roles-box { padding: 3rem 2rem; }
+  .no-roles { text-align: center; display: flex; flex-direction: column; align-items: center; gap: .75rem; }
+  .no-roles-icon { font-size: 2.5rem; }
+  .no-roles h3 { font-size: 1.1rem; font-weight: 700; color: #fff; }
+  .no-roles p { font-size: .9rem; color: var(--muted); line-height: 1.7; max-width: 440px; }
+  .no-roles-sub { font-size: .85rem; color: var(--muted); }
+  .text-link { color: var(--cyan); text-decoration: underline; text-underline-offset: 2px; }
+
+  /* CTA */
+  .careers-cta {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 2rem;
+    padding: 2rem 2.5rem;
+    flex-wrap: wrap;
+  }
+  .careers-cta__text h2 { font-size: 1.15rem; font-weight: 700; color: #fff; margin-bottom: .5rem; }
+  .careers-cta__text p  { font-size: .875rem; color: var(--muted); line-height: 1.7; max-width: 480px; }
+  .careers-cta__btn { flex-shrink: 0; }
+</style>

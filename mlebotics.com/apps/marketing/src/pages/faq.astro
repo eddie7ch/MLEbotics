@@ -1,0 +1,168 @@
+---
+import Layout from '@layouts/Layout.astro'
+import Header from '@components/Header.astro'
+import Footer from '@components/Footer.astro'
+
+const faqs = [
+  {
+    q: 'What is MLEbotics?',
+    a: 'MLEbotics is a one-person engineering lab based in Calgary, AB, Canada. We build modular AI agents, automation tools, and robotics companion apps — all open source.',
+  },
+  {
+    q: 'Who builds MLEbotics?',
+    a: 'MLEbotics is built and maintained by Eddie Chongtham, a software engineer with experience in AI, Flutter, Python, and embedded systems.',
+  },
+  {
+    q: 'Are the projects free and open source?',
+    a: 'Yes. All MLEbotics projects are open source and available on GitHub at github.com/MLEbotics. Contributions, issues, and feedback are welcome.',
+  },
+  {
+    q: 'What platforms does RunCompanion support?',
+    a: 'RunCompanion is available on Windows (desktop), Android, iOS, and the Web. A macOS build is planned for a future release.',
+  },
+  {
+    q: 'How does AutoFormFiller work?',
+    a: 'AutoFormFiller is a Chrome extension paired with a Flask backend. It parses your resume (PDF), extracts your information using OpenAI, and intelligently fills in job application forms on any website.',
+  },
+  {
+    q: 'Can I use Hey Girl on any operating system?',
+    a: 'Hey Girl was designed for Windows but the core Python scripts run on macOS and Linux with minor adjustments. A web-based version is in progress.',
+  },
+  {
+    q: 'How can I contribute to a project?',
+    a: 'Open an issue or submit a pull request on any of the GitHub repositories. We review contributions regularly and are happy to collaborate.',
+  },
+  {
+    q: 'Do you offer consulting or custom development?',
+    a: 'Yes — for select projects. If you have a specific AI, automation, or robotics problem, reach out via the Contact page and describe what you need.',
+  },
+  {
+    q: 'Does MLEbotics collect any personal data?',
+    a: 'The marketing site (mlebotics.com) does not collect personal data beyond what you voluntarily submit (e.g., waitlist email). See our Privacy Policy for full details.',
+  },
+  {
+    q: 'How can I stay updated on new releases?',
+    a: 'Join the email waitlist on the homepage, follow the GitHub repositories, or check the Changelog page for all updates.',
+  },
+]
+---
+
+<Layout title="FAQ" description="Frequently asked questions about MLEbotics, our projects, and how to get involved.">
+  <Header />
+  <main id="main-content">
+    <div class="container faq-page">
+      <div class="faq-header">
+        <p class="tag">Got questions?</p>
+        <h1>Frequently asked questions</h1>
+        <p class="faq-sub">Everything you need to know about MLEbotics and our projects. Can't find the answer? <a href="/contact" class="faq-contact-link">Reach out directly.</a></p>
+      </div>
+
+      <div class="faq-list" id="faq-list">
+        {faqs.map((item, i) => (
+          <div class="faq-item" id={`faq-${i}`}>
+            <button class="faq-trigger" aria-expanded="false" aria-controls={`faq-body-${i}`}>
+              <span class="faq-question">{item.q}</span>
+              <span class="faq-chevron" aria-hidden="true">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+              </span>
+            </button>
+            <div class="faq-body" id={`faq-body-${i}`} role="region" hidden>
+              <p class="faq-answer">{item.a}</p>
+            </div>
+          </div>
+        ))}
+      </div>
+
+      <div class="faq-cta card reveal">
+        <p class="tag">Still have questions?</p>
+        <h2>We're happy to help</h2>
+        <p>Our response time is usually under 24 hours.</p>
+        <a href="/contact" class="btn-primary">Contact us &rarr;</a>
+      </div>
+    </div>
+  </main>
+  <Footer />
+</Layout>
+
+<script>
+  document.querySelectorAll('.faq-trigger').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      const expanded = btn.getAttribute('aria-expanded') === 'true'
+      const bodyId = btn.getAttribute('aria-controls')
+      const body = bodyId ? document.getElementById(bodyId) : null
+      // Close all others
+      document.querySelectorAll('.faq-trigger').forEach((b) => {
+        b.setAttribute('aria-expanded', 'false')
+        b.closest('.faq-item')?.classList.remove('faq-item--open')
+      })
+      document.querySelectorAll('.faq-body').forEach((b) => {
+        ;(b as HTMLElement).hidden = true
+      })
+      if (!expanded && body) {
+        btn.setAttribute('aria-expanded', 'true')
+        btn.closest('.faq-item')?.classList.add('faq-item--open')
+        body.hidden = false
+      }
+    })
+  })
+</script>
+
+<style>
+  .faq-page {
+    padding-top: 5rem;
+    padding-bottom: 6rem;
+    max-width: 760px;
+  }
+  .faq-header { margin-bottom: 3.5rem; }
+  .faq-header h1 {
+    font-size: clamp(1.8rem, 4vw, 2.8rem);
+    font-weight: 700;
+    color: #fff;
+    margin-bottom: .6rem;
+  }
+  .faq-sub { font-size: 1rem; color: var(--muted); line-height: 1.7; }
+  .faq-contact-link { color: var(--cyan); text-decoration: underline; }
+
+  /* Accordion */
+  .faq-list { display: flex; flex-direction: column; border: 1px solid var(--border); border-radius: 16px; overflow: hidden; }
+  .faq-item { border-bottom: 1px solid var(--border); }
+  .faq-item:last-child { border-bottom: none; }
+  .faq-trigger {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: 1.25rem 1.5rem;
+    background: none;
+    border: none;
+    cursor: pointer;
+    text-align: left;
+    font-family: inherit;
+    transition: background .15s;
+  }
+  .faq-trigger:hover { background: rgba(255,255,255,.03); }
+  .faq-item--open .faq-trigger { background: rgba(0,212,255,.04); }
+  .faq-question { font-size: .95rem; font-weight: 600; color: #e2e8f0; line-height: 1.5; flex: 1; }
+  .faq-chevron {
+    color: var(--muted);
+    flex-shrink: 0;
+    transition: transform .25s cubic-bezier(.22,1,.36,1);
+  }
+  .faq-item--open .faq-chevron { transform: rotate(180deg); color: var(--cyan); }
+  .faq-body { padding: 0 1.5rem 1.25rem; }
+  .faq-answer { font-size: .9rem; color: #94a3b8; line-height: 1.8; margin: 0; }
+
+  /* CTA */
+  .faq-cta {
+    margin-top: 3.5rem;
+    padding: 2.5rem;
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: .75rem;
+  }
+  .faq-cta h2 { font-size: 1.4rem; font-weight: 700; color: #fff; }
+  .faq-cta p { font-size: .9rem; color: var(--muted); }
+</style>

@@ -1,0 +1,223 @@
+---
+import Layout from '@layouts/Layout.astro'
+import Header from '@components/Header.astro'
+import Footer from '@components/Footer.astro'
+
+const entries = [
+  {
+    date: 'April 17, 2026',
+    version: 'v1.0.0',
+    project: 'RunCompanion',
+    type: 'release',
+    items: [
+      'First public Windows release of RunCompanion desktop app.',
+      'Real-time BLE integration with robot training hardware.',
+      'Adaptive training plan generation using AI.',
+      'PacerPro calculator: goal time → per-km/mile splits.',
+      'Firebase Firestore real-time sync across devices.',
+      'Offline-first architecture for uninterrupted tracking.',
+    ],
+  },
+  {
+    date: 'March 2026',
+    version: 'v2.1',
+    project: 'AutoFormFiller',
+    type: 'update',
+    items: [
+      'Added Railway-hosted production deployment.',
+      'Improved OpenAI field-mapping accuracy for job application forms.',
+      'PDF resume parsing now handles multi-column layouts.',
+      'Chrome extension sidebar redesigned for faster workflow.',
+    ],
+  },
+  {
+    date: 'February 2026',
+    version: 'v1.2',
+    project: 'Hey Girl (Voice AI)',
+    type: 'update',
+    items: [
+      'Added assignment reader with PDF parsing.',
+      'Quiz solver mode — voice-activated Q&A against course materials.',
+      'Cost tracker: per-session OpenAI API usage monitoring.',
+      'New GUI mode alongside existing CLI.',
+    ],
+  },
+  {
+    date: 'January 2026',
+    version: 'v1.0',
+    project: 'Computer Use Agent',
+    type: 'release',
+    items: [
+      'Initial release of Anthropic-powered desktop automation agent.',
+      'Screen capture + AI vision pipeline for task completion.',
+      'Supports mouse movement, keyboard input, and app switching.',
+    ],
+  },
+  {
+    date: 'December 2025',
+    version: 'v1.0',
+    project: 'MLEbotics Platform',
+    type: 'release',
+    items: [
+      'Launched mlebotics.com — marketing site, console, studio, and docs.',
+      'Turborepo monorepo consolidating all MLEbotics projects.',
+      'Firebase + Vercel dual-deployment infrastructure.',
+      'Community chat widget deployed across all pages.',
+    ],
+  },
+]
+
+const typeColor: Record<string, string> = {
+  release: '#00ff88',
+  update: '#00d4ff',
+  fix: '#f59e0b',
+}
+const typeBg: Record<string, string> = {
+  release: 'rgba(0,255,136,.12)',
+  update: 'rgba(0,212,255,.12)',
+  fix: 'rgba(245,158,11,.12)',
+}
+---
+
+<Layout title="Changelog" description="MLEbotics changelog — every release, update, and improvement.">
+  <Header />
+  <main id="main-content">
+    <div class="container changelog-page">
+      <div class="changelog-header">
+        <p class="tag">What's new</p>
+        <h1>Changelog</h1>
+        <p class="changelog-sub">Every release, update, and improvement across all MLEbotics projects.</p>
+      </div>
+
+      <div class="timeline">
+        {entries.map((e) => (
+          <article class="timeline-entry reveal">
+            <div class="timeline-dot" aria-hidden="true"></div>
+            <div class="timeline-content card">
+              <div class="timeline-meta">
+                <span class="timeline-date">{e.date}</span>
+                <span
+                  class="timeline-badge"
+                  style={`color:${typeColor[e.type]};background:${typeBg[e.type]}`}
+                >
+                  {e.type}
+                </span>
+              </div>
+              <div class="timeline-title-row">
+                <h2 class="timeline-project">{e.project}</h2>
+                <span class="timeline-version">{e.version}</span>
+              </div>
+              <ul class="timeline-items">
+                {e.items.map((item) => (
+                  <li>{item}</li>
+                ))}
+              </ul>
+            </div>
+          </article>
+        ))}
+      </div>
+    </div>
+  </main>
+  <Footer />
+</Layout>
+
+<style>
+  .changelog-page {
+    padding-top: 5rem;
+    padding-bottom: 6rem;
+    max-width: 780px;
+  }
+  .changelog-header { margin-bottom: 4rem; }
+  .changelog-header h1 {
+    font-size: clamp(1.8rem, 4vw, 2.8rem);
+    font-weight: 700;
+    color: #fff;
+    margin-bottom: .6rem;
+  }
+  .changelog-sub {
+    font-size: 1rem;
+    color: var(--muted);
+    line-height: 1.7;
+  }
+
+  /* Timeline */
+  .timeline {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+    padding-left: 2rem;
+  }
+  .timeline::before {
+    content: '';
+    position: absolute;
+    left: 7px;
+    top: 0;
+    bottom: 0;
+    width: 2px;
+    background: var(--border);
+  }
+  .timeline-entry {
+    position: relative;
+  }
+  .timeline-dot {
+    position: absolute;
+    left: -1.85rem;
+    top: 1.5rem;
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background: var(--cyan);
+    border: 2px solid var(--bg);
+    box-shadow: 0 0 8px rgba(0,212,255,.4);
+  }
+  .timeline-content {
+    padding: 1.75rem;
+  }
+  .timeline-meta {
+    display: flex;
+    align-items: center;
+    gap: .75rem;
+    margin-bottom: .85rem;
+  }
+  .timeline-date {
+    font-size: .75rem;
+    color: var(--muted);
+  }
+  .timeline-badge {
+    font-size: .65rem;
+    font-weight: 700;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+    padding: .2rem .55rem;
+    border-radius: 99px;
+  }
+  .timeline-title-row {
+    display: flex;
+    align-items: baseline;
+    gap: .75rem;
+    margin-bottom: 1rem;
+  }
+  .timeline-project {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: #fff;
+  }
+  .timeline-version {
+    font-size: .75rem;
+    font-weight: 600;
+    color: var(--muted);
+    font-family: 'Orbitron', monospace;
+  }
+  .timeline-items {
+    padding-left: 1.25rem;
+    display: flex;
+    flex-direction: column;
+    gap: .45rem;
+  }
+  .timeline-items li {
+    font-size: .875rem;
+    color: #94a3b8;
+    line-height: 1.7;
+  }
+</style>

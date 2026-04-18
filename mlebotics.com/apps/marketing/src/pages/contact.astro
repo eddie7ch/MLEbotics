@@ -1,0 +1,333 @@
+---
+import Layout from '@layouts/Layout.astro'
+import Header from '@components/Header.astro'
+import Footer from '@components/Footer.astro'
+---
+
+<Layout title="Contact" description="Get in touch with MLEbotics — Eddie Chongtham, Calgary, AB, Canada.">
+  <Header />
+  <main id="main-content">
+    <div class="container contact-page">
+      <div class="contact-header">
+        <p class="tag">Get in touch</p>
+        <h1>Contact us</h1>
+        <p class="contact-sub">Have a question, a collaboration idea, or just want to say hi? We respond to every message.</p>
+      </div>
+
+      <div class="contact-highlights">
+        <div class="contact-highlight">
+          <span class="contact-highlight__label">Response time</span>
+          <strong>Within 24 hours</strong>
+        </div>
+        <div class="contact-highlight">
+          <span class="contact-highlight__label">Discovery call</span>
+          <strong>Usually same week</strong>
+        </div>
+        <div class="contact-highlight">
+          <span class="contact-highlight__label">Build approach</span>
+          <strong>Lean + production-ready</strong>
+        </div>
+      </div>
+
+      <div class="contact-grid">
+        <!-- Form -->
+        <div class="contact-form-wrap">
+          <div class="contact-form-intro">
+            <h2>Project brief</h2>
+            <p>Share your goal, timeline, and technical context. We will generate a structured draft email so you can send it in one click.</p>
+          </div>
+          <form class="contact-form" id="contact-form" novalidate>
+            <div class="field">
+              <label for="name">Name</label>
+              <input type="text" id="name" name="name" placeholder="Eddie Chongtham" autocomplete="name" required />
+            </div>
+            <div class="field">
+              <label for="email">Email</label>
+              <input type="email" id="email" name="email" placeholder="you@example.com" autocomplete="email" required />
+            </div>
+            <div class="field">
+              <label for="subject">Subject</label>
+              <select id="subject" name="subject">
+                <option value="general">General inquiry</option>
+                <option value="collaboration">Collaboration</option>
+                <option value="hiring">Hiring / work together</option>
+                <option value="bug">Bug report</option>
+                <option value="other">Other</option>
+              </select>
+            </div>
+            <div class="field">
+              <label for="timeline">Timeline</label>
+              <select id="timeline" name="timeline">
+                <option value="asap">ASAP (this month)</option>
+                <option value="quarter">This quarter</option>
+                <option value="planning">Still planning</option>
+              </select>
+            </div>
+            <div class="field">
+              <label for="message">Message</label>
+              <textarea id="message" name="message" rows="5" placeholder="Tell us what's on your mind…" required></textarea>
+            </div>
+            <button type="submit" class="btn-primary contact-submit">Send message &rarr;</button>
+            <div class="contact-confirm" id="contact-confirm" hidden>
+              <p>Draft prepared. Choose one of the options below.</p>
+              <div class="contact-confirm__actions">
+                <a href="#" id="contact-mailto" class="btn-primary btn--sm">Open email draft</a>
+                <button type="button" id="contact-copy" class="btn-outline btn--sm">Copy brief</button>
+              </div>
+            </div>
+          </form>
+        </div>
+
+        <!-- Info panel -->
+        <aside class="contact-info">
+          <div class="info-card card">
+            <h3>Direct email</h3>
+            <p>Prefer email? Reach out directly and we'll respond within 24 hours.</p>
+            <a href="mailto:eddie@mlebotics.com" class="info-link">eddie@mlebotics.com &rarr;</a>
+          </div>
+          <div class="info-card card">
+            <h3>GitHub</h3>
+            <p>Open an issue or discussion on any of our repositories.</p>
+            <a href="https://github.com/MLEbotics" target="_blank" rel="noopener noreferrer" class="info-link">github.com/MLEbotics &rarr;</a>
+          </div>
+          <div class="info-card card">
+            <h3>LinkedIn</h3>
+            <p>Connect professionally or send a message on LinkedIn.</p>
+            <a href="https://www.linkedin.com/in/eddiechongtham/" target="_blank" rel="noopener noreferrer" class="info-link">linkedin.com/in/eddiechongtham &rarr;</a>
+          </div>
+          <div class="info-card card">
+            <h3>Location</h3>
+            <p>Based in <strong>Calgary, AB, Canada</strong>.<br />Working with teams worldwide.</p>
+          </div>
+          <div class="info-card card">
+            <h3>What happens next</h3>
+            <ol class="contact-steps">
+              <li>We review your brief and suggest a best-fit scope.</li>
+              <li>We align on architecture, timeline, and milestones.</li>
+              <li>We start with a focused build sprint.</li>
+            </ol>
+          </div>
+        </aside>
+      </div>
+    </div>
+  </main>
+  <Footer />
+</Layout>
+
+<script>
+  const form = document.getElementById('contact-form') as HTMLFormElement | null
+  const confirm = document.getElementById('contact-confirm') as HTMLElement | null
+  const confirmMailto = document.getElementById('contact-mailto') as HTMLAnchorElement | null
+  const confirmCopy = document.getElementById('contact-copy') as HTMLButtonElement | null
+  const submitBtn = form?.querySelector('button[type="submit"]') as HTMLButtonElement | null
+
+  let preparedBody = ''
+
+  form?.addEventListener('submit', async (e) => {
+    e.preventDefault()
+    const data = new FormData(form)
+    const name = (data.get('name') as string)?.trim()
+    const email = (data.get('email') as string)?.trim()
+    const timeline = (data.get('timeline') as string)?.trim()
+    const message = (data.get('message') as string)?.trim()
+    if (!name || !email || !message) return
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return
+
+    if (submitBtn) {
+      submitBtn.disabled = true
+      submitBtn.textContent = 'Preparing…'
+    }
+
+    const subjectValue = (data.get('subject') as string) || 'general'
+    const subject = encodeURIComponent(`MLEbotics inquiry - ${subjectValue}`)
+    preparedBody = `Name: ${name}\nEmail: ${email}\nTimeline: ${timeline}\nSubject: ${subjectValue}\n\nProject details:\n${message}`
+    const body = encodeURIComponent(preparedBody)
+    const mailtoUrl = `mailto:eddie@mlebotics.com?subject=${subject}&body=${body}`
+    if (confirmMailto) confirmMailto.href = mailtoUrl
+
+    if (form) form.style.opacity = '0.55'
+    if (confirm) confirm.hidden = false
+    if (submitBtn) {
+      submitBtn.textContent = 'Draft prepared'
+      submitBtn.disabled = false
+    }
+
+    if (typeof window.showToast === 'function') {
+      window.showToast('Your message draft is ready.', 'success', 2800)
+    }
+  })
+
+  confirmCopy?.addEventListener('click', async () => {
+    if (!preparedBody) return
+    await navigator.clipboard.writeText(preparedBody)
+    if (typeof window.showToast === 'function') {
+      window.showToast('Brief copied to clipboard.', 'info', 2600)
+    }
+  })
+</script>
+
+<style>
+  .contact-page {
+    padding-top: 5rem;
+    padding-bottom: 6rem;
+    max-width: 1000px;
+  }
+  .contact-header {
+    margin-bottom: 1.4rem;
+  }
+  .contact-header h1 {
+    font-size: clamp(1.8rem, 4vw, 2.8rem);
+    font-weight: 700;
+    color: #fff;
+    margin-bottom: .6rem;
+  }
+  .contact-sub {
+    font-size: 1rem;
+    color: var(--muted);
+    max-width: 500px;
+    line-height: 1.7;
+  }
+
+  .contact-highlights {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: .75rem;
+    margin-bottom: 2.2rem;
+  }
+  .contact-highlight {
+    border: 1px solid rgba(130, 150, 190, .24);
+    border-radius: 12px;
+    background: linear-gradient(155deg, rgba(20, 29, 46, .65), rgba(11, 17, 30, .75));
+    padding: .85rem 1rem;
+    display: flex;
+    flex-direction: column;
+    gap: .25rem;
+  }
+  .contact-highlight__label {
+    font-size: .65rem;
+    color: #8ca3c3;
+    text-transform: uppercase;
+    letter-spacing: .1em;
+    font-weight: 700;
+  }
+  .contact-highlight strong {
+    font-size: .83rem;
+    color: #e7efff;
+    letter-spacing: .01em;
+  }
+
+  @media (max-width: 768px) {
+    .contact-highlights { grid-template-columns: 1fr; }
+  }
+
+  .contact-grid {
+    display: grid;
+    grid-template-columns: 1fr 360px;
+    gap: 3rem;
+    align-items: start;
+  }
+  @media (max-width: 768px) {
+    .contact-grid { grid-template-columns: 1fr; }
+  }
+
+  /* Form */
+  .contact-form-wrap {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 1.4rem;
+  }
+  .contact-form-intro {
+    border: 1px solid rgba(116,209,255,.2);
+    background: rgba(56,198,255,.07);
+    border-radius: 11px;
+    padding: .9rem 1rem;
+    margin-bottom: 1rem;
+  }
+  .contact-form-intro h2 {
+    font-size: .88rem;
+    text-transform: uppercase;
+    letter-spacing: .09em;
+    color: #c5dcff;
+    margin-bottom: .35rem;
+  }
+  .contact-form-intro p {
+    font-size: .82rem;
+    color: #9bb2d2;
+    line-height: 1.62;
+  }
+  .contact-form { display: flex; flex-direction: column; gap: 1.25rem; }
+  .field { display: flex; flex-direction: column; gap: .4rem; }
+  .field label {
+    font-size: .8rem;
+    font-weight: 600;
+    color: #94a3b8;
+    letter-spacing: .04em;
+    text-transform: uppercase;
+  }
+  .field input,
+  .field select,
+  .field textarea {
+    background: rgba(255,255,255,.04);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: .7rem 1rem;
+    font-size: .9rem;
+    color: var(--text);
+    font-family: inherit;
+    outline: none;
+    transition: border-color .15s;
+    resize: vertical;
+  }
+  .field input::placeholder,
+  .field textarea::placeholder { color: var(--muted); }
+  .field input:focus,
+  .field select:focus,
+  .field textarea:focus { border-color: var(--cyan); }
+  .field select { cursor: pointer; appearance: auto; }
+  .contact-submit { align-self: flex-start; }
+  .contact-confirm {
+    border: 1px solid rgba(125,243,190,.25);
+    border-radius: 10px;
+    background: rgba(125,243,190,.08);
+    padding: .8rem;
+    margin-top: .35rem;
+  }
+  .contact-confirm p {
+    color: #d3fce9;
+    font-size: .84rem;
+    margin-bottom: .6rem;
+  }
+  .contact-confirm__actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: .5rem;
+  }
+
+  /* Info panel */
+  .contact-info { display: flex; flex-direction: column; gap: 1rem; }
+  .info-card { padding: 1.5rem; display: flex; flex-direction: column; gap: .5rem; }
+  .info-card h3 { font-size: .9rem; font-weight: 700; color: #fff; }
+  .info-card p { font-size: .85rem; color: var(--muted); line-height: 1.6; }
+  .info-card strong { color: #e2e8f0; }
+  .info-link {
+    font-size: .85rem;
+    color: var(--cyan);
+    text-decoration: none;
+    font-weight: 500;
+    transition: opacity .15s;
+  }
+  .info-link:hover { opacity: .8; }
+
+  .contact-steps {
+    display: grid;
+    gap: .45rem;
+    margin: 0;
+    padding-left: 1.05rem;
+  }
+  .contact-steps li {
+    font-size: .81rem;
+    color: #95accd;
+    line-height: 1.62;
+  }
+</style>

@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>MLEbotics Blog</title>
+    <link>https://mlebotics.com/blog</link>
+    <description>AI agents, automation systems, and robotics tools — articles and updates from MLEbotics.</description>
+    <language>en-us</language>
+    <managingEditor>eddie@mlebotics.com (Eddie Chongtham)</managingEditor>
+    <webMaster>eddie@mlebotics.com (Eddie Chongtham)</webMaster>
+    <copyright>2026 MLEbotics. All rights reserved.</copyright>
+    <lastBuildDate>Thu, 17 Apr 2026 00:00:00 +0000</lastBuildDate>
+    <atom:link href="https://mlebotics.com/rss.xml" rel="self" type="application/rss+xml"/>
+    <image>
+      <url>https://mlebotics.com/favicon.svg</url>
+      <title>MLEbotics Blog</title>
+      <link>https://mlebotics.com/blog</link>
+    </image>
+
+    <item>
+      <title>Building RunCompanion: AI Training at Your Wrist</title>
+      <link>https://mlebotics.com/blog/building-run-companion</link>
+      <description>How we built an AI-powered running coach that adapts to your fitness, syncs with BLE hardware, and runs on Windows, Android, iOS, and Web.</description>
+      <author>eddie@mlebotics.com (Eddie Chongtham)</author>
+      <pubDate>Wed, 16 Apr 2026 00:00:00 +0000</pubDate>
+      <guid isPermaLink="true">https://mlebotics.com/blog/building-run-companion</guid>
+    </item>
+
+    <item>
+      <title>AI Automation Workflow: From Idea to Production</title>
+      <link>https://mlebotics.com/blog/ai-automation-workflow</link>
+      <description>A practical guide to building production-ready AI automation workflows using Python, OpenAI, and Firebase — lessons from shipping AutoFormFiller and Hey Girl.</description>
+      <author>eddie@mlebotics.com (Eddie Chongtham)</author>
+      <pubDate>Mon, 14 Apr 2026 00:00:00 +0000</pubDate>
+      <guid isPermaLink="true">https://mlebotics.com/blog/ai-automation-workflow</guid>
+    </item>
+
+  </channel>
+</rss>

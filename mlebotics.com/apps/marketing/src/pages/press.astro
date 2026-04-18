@@ -1,0 +1,204 @@
+---
+import Layout from '@layouts/Layout.astro'
+import Header from '@components/Header.astro'
+import Footer from '@components/Footer.astro'
+
+const facts = [
+  { label: 'Founded', value: '2025' },
+  { label: 'Location', value: 'Calgary, AB, Canada' },
+  { label: 'Founder', value: 'Eddie Chongtham' },
+  { label: 'Focus', value: 'AI · Automation · Robotics' },
+  { label: 'Open source', value: '100%' },
+  { label: 'Platforms', value: 'Web, Windows, Android, iOS' },
+]
+---
+
+<Layout title="Press" description="MLEbotics press kit — brand assets, company facts, founder bio, and media contact.">
+  <Header />
+  <main id="main-content">
+    <div class="container press-page">
+
+      <div class="press-header">
+        <p class="tag">Media & press</p>
+        <h1>Press kit</h1>
+        <p class="press-sub">Everything you need to cover MLEbotics — brand assets, company facts, and contact details. No watermarks, all assets free to use in editorial coverage.</p>
+      </div>
+
+      <!-- Company facts -->
+      <section class="press-section reveal">
+        <h2 class="press-section-title">Company at a glance</h2>
+        <div class="facts-grid">
+          {facts.map(f => (
+            <div class="fact-item card">
+              <span class="fact-label">{f.label}</span>
+              <span class="fact-value">{f.value}</span>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      <!-- About -->
+      <section class="press-section reveal">
+        <h2 class="press-section-title">About MLEbotics</h2>
+        <div class="press-text card">
+          <p>MLEbotics is an open-source engineering lab building modular AI agents, workflow automation tools, and robotics companion applications. Founded by Eddie Chongtham in Calgary, Alberta, Canada, MLEbotics' mission is to remove friction from everyday technical work by shipping practical, well-engineered software.</p>
+          <p>Current products include <strong>RunCompanion</strong> (an AI-powered running coach with BLE hardware integration), <strong>AutoFormFiller</strong> (an AI Chrome extension that fills job applications automatically), <strong>Hey Girl</strong> (a voice-activated AI desktop assistant), and <strong>Computer Use Agent</strong> (an Anthropic-powered autonomous desktop automation system).</p>
+          <p>All projects are released under open-source licenses and available at <a href="https://github.com/MLEbotics" target="_blank" rel="noopener noreferrer" class="text-link">github.com/MLEbotics</a>.</p>
+        </div>
+      </section>
+
+      <!-- Founder bio -->
+      <section class="press-section reveal">
+        <h2 class="press-section-title">Founder bio</h2>
+        <div class="bio-card card">
+          <div class="bio-avatar" aria-hidden="true">EC</div>
+          <div class="bio-content">
+            <h3 class="bio-name">Eddie Chongtham</h3>
+            <p class="bio-title">Founder &amp; Engineer, MLEbotics</p>
+            <p class="bio-text">Eddie Chongtham is a software engineer based in Calgary, Alberta, Canada. He specialises in AI integration, Flutter mobile development, Python automation, and IoT/robotics systems. MLEbotics was founded to apply these skills to real, open problems — and to share the work publicly as a learning resource.</p>
+            <div class="bio-links">
+              <a href="https://www.linkedin.com/in/eddiechongtham/" target="_blank" rel="noopener noreferrer" class="bio-link">LinkedIn</a>
+              <a href="https://github.com/MLEbotics" target="_blank" rel="noopener noreferrer" class="bio-link">GitHub</a>
+              <a href="mailto:eddie@mlebotics.com" class="bio-link">eddie@mlebotics.com</a>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Brand assets -->
+      <section class="press-section reveal">
+        <h2 class="press-section-title">Brand assets</h2>
+        <div class="assets-grid">
+          <div class="asset-card card">
+            <div class="asset-preview asset-preview--dark">
+              <svg viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg" width="48" height="48" aria-hidden="true">
+                <rect width="48" height="48" rx="10" fill="#06080f"/>
+                <path d="M10 15l10 9-10 9" stroke="#4ade80" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+                <path d="M22 15l10 9-10 9" stroke="#00d4ff" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+                <path d="M34 15l6 9-6 9" stroke="#4ade80" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+              <span class="asset-wordmark">MLEbotics</span>
+            </div>
+            <p class="asset-name">Logo — Dark background</p>
+            <p class="asset-note">Use on dark or photographic backgrounds</p>
+          </div>
+          <div class="asset-card card">
+            <div class="asset-preview asset-preview--light">
+              <svg viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg" width="48" height="48" aria-hidden="true">
+                <rect width="48" height="48" rx="10" fill="#f8fafc"/>
+                <path d="M10 15l10 9-10 9" stroke="#16a34a" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+                <path d="M22 15l10 9-10 9" stroke="#0284c7" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+                <path d="M34 15l6 9-6 9" stroke="#16a34a" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+              <span class="asset-wordmark asset-wordmark--dark">MLEbotics</span>
+            </div>
+            <p class="asset-name">Logo — Light background</p>
+            <p class="asset-note">Use on white or light backgrounds</p>
+          </div>
+        </div>
+        <p class="brand-note">Brand colours: <code class="code-inline">#00d4ff</code> (Cyan) · <code class="code-inline">#00ff88</code> (Green) · <code class="code-inline">#06080f</code> (Background). Primary font: <strong>Orbitron</strong> (wordmark) / <strong>Inter</strong> (body).</p>
+      </section>
+
+      <!-- Media contact -->
+      <section class="press-section reveal">
+        <div class="media-contact card">
+          <h2>Media contact</h2>
+          <p>For interview requests, product demos, and press inquiries, contact Eddie directly.</p>
+          <div class="media-contact__details">
+            <a href="mailto:eddie@mlebotics.com" class="media-contact__item">
+              <span class="media-contact__icon" aria-hidden="true">✉️</span>
+              eddie@mlebotics.com
+            </a>
+            <a href="https://www.linkedin.com/in/eddiechongtham/" target="_blank" rel="noopener noreferrer" class="media-contact__item">
+              <span class="media-contact__icon" aria-hidden="true">💼</span>
+              linkedin.com/in/eddiechongtham
+            </a>
+          </div>
+          <p class="media-response">We typically respond within one business day.</p>
+        </div>
+      </section>
+
+    </div>
+  </main>
+  <Footer />
+</Layout>
+
+<style>
+  .press-page {
+    padding-top: 5rem;
+    padding-bottom: 6rem;
+    max-width: 900px;
+  }
+  .press-header { margin-bottom: 4rem; }
+  .press-header h1 { font-size: clamp(1.8rem, 4vw, 2.8rem); font-weight: 700; color: #fff; margin-bottom: .6rem; }
+  .press-sub { font-size: 1rem; color: var(--muted); line-height: 1.7; max-width: 580px; }
+  .press-section { margin-bottom: 3.5rem; }
+  .press-section-title { font-size: 1.2rem; font-weight: 700; color: #fff; margin-bottom: 1.25rem; }
+  .text-link { color: var(--cyan); text-decoration: underline; text-underline-offset: 2px; }
+
+  /* Facts */
+  .facts-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: .75rem; }
+  .fact-item { padding: 1.1rem 1.4rem; display: flex; flex-direction: column; gap: .3rem; }
+  .fact-label { font-size: .7rem; font-weight: 700; text-transform: uppercase; letter-spacing: .08em; color: var(--muted); }
+  .fact-value { font-size: .9rem; font-weight: 600; color: #fff; }
+
+  /* About text */
+  .press-text { padding: 1.75rem 2rem; display: flex; flex-direction: column; gap: 1rem; }
+  .press-text p { font-size: .9rem; color: #94a3b8; line-height: 1.8; margin: 0; }
+  .press-text strong { color: #e2e8f0; }
+
+  /* Bio */
+  .bio-card { display: flex; gap: 1.5rem; padding: 1.75rem; flex-wrap: wrap; }
+  .bio-avatar {
+    width: 64px; height: 64px; border-radius: 50%;
+    background: linear-gradient(135deg, var(--cyan), var(--green));
+    color: #06080f; font-size: .9rem; font-weight: 700;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+  }
+  .bio-content { flex: 1; min-width: 200px; }
+  .bio-name  { font-size: 1rem; font-weight: 700; color: #fff; margin-bottom: .2rem; }
+  .bio-title { font-size: .8rem; color: var(--muted); margin-bottom: .85rem; }
+  .bio-text  { font-size: .875rem; color: #94a3b8; line-height: 1.75; margin-bottom: 1rem; }
+  .bio-links { display: flex; gap: 1rem; flex-wrap: wrap; }
+  .bio-link  { font-size: .8rem; color: var(--cyan); text-decoration: none; border-bottom: 1px solid rgba(0,212,255,.3); padding-bottom: .05rem; }
+  .bio-link:hover { opacity: .8; }
+
+  /* Brand assets */
+  .assets-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1rem; }
+  @media (max-width: 560px) { .assets-grid { grid-template-columns: 1fr; } }
+  .asset-card { padding: 1.25rem; }
+  .asset-preview {
+    height: 120px; border-radius: 10px; display: flex; align-items: center; justify-content: center;
+    gap: .75rem; margin-bottom: .85rem;
+  }
+  .asset-preview--dark  { background: #06080f; border: 1px solid #1e293b; }
+  .asset-preview--light { background: #f8fafc; border: 1px solid #e2e8f0; }
+  .asset-wordmark {
+    font-family: 'Orbitron', monospace;
+    font-size: 1rem; font-weight: 900; color: #fff; letter-spacing: .06em;
+  }
+  .asset-wordmark--dark { color: #0f172a; }
+  .asset-name { font-size: .85rem; font-weight: 600; color: #e2e8f0; margin-bottom: .2rem; }
+  .asset-note { font-size: .75rem; color: var(--muted); }
+  .brand-note { font-size: .83rem; color: #64748b; line-height: 1.7; }
+  .code-inline {
+    background: rgba(0,212,255,.1); border: 1px solid rgba(0,212,255,.2);
+    border-radius: 4px; padding: .1rem .4rem; font-size: .8em; color: var(--cyan);
+    font-family: monospace;
+  }
+
+  /* Media contact */
+  .media-contact { padding: 2rem 2.5rem; }
+  .media-contact h2 { font-size: 1.15rem; font-weight: 700; color: #fff; margin-bottom: .5rem; }
+  .media-contact > p { font-size: .9rem; color: var(--muted); margin-bottom: 1.25rem; }
+  .media-contact__details { display: flex; flex-direction: column; gap: .6rem; margin-bottom: 1rem; }
+  .media-contact__item {
+    display: flex; align-items: center; gap: .6rem;
+    font-size: .875rem; color: var(--cyan); text-decoration: none;
+    font-weight: 500;
+  }
+  .media-contact__item:hover { opacity: .8; }
+  .media-contact__icon { font-size: 1rem; }
+  .media-response { font-size: .8rem; color: var(--muted); }
+</style>

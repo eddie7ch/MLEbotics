@@ -3,6 +3,21 @@ const year = new Date().getFullYear()
 ---
 
 <footer class="footer">
+  <div class="container footer__top-cta">
+    <div class="footer__top-copy">
+      <p class="footer__top-label">Need a premium build?</p>
+      <h2>Turn your AI or automation idea into a production product.</h2>
+      <p>Share a quick brief and we will draft a practical roadmap in your email client.</p>
+    </div>
+    <form class="footer__brief" id="footer-brief-form" novalidate>
+      <label class="sr-only" for="footer-brief-email">Email</label>
+      <input id="footer-brief-email" name="email" type="email" placeholder="you@company.com" autocomplete="email" required />
+      <label class="sr-only" for="footer-brief-note">Project brief</label>
+      <textarea id="footer-brief-note" name="note" rows="2" placeholder="What are you building?" required></textarea>
+      <button type="submit" class="btn-primary">Start the conversation &rarr;</button>
+    </form>
+  </div>
+
   <div class="container footer__inner">
     <div class="footer__brand">
       <span class="logo">
@@ -23,13 +38,21 @@ const year = new Date().getFullYear()
         <a href="/blog">Blog</a>
         <a href="/about">About</a>
         <a href="/architecture">Architecture</a>
+        <a href="/changelog">Changelog</a>
       </div>
       <div class="footer__col">
         <h4>Company</h4>
         <a href="/vision">Vision</a>
         <a href="/mission">Mission</a>
-        <a href="/projects/personal">Personal projects</a>
-        <a href="/projects/school">School projects</a>
+        <a href="/careers">Careers</a>
+        <a href="/press">Press</a>
+        <a href="/faq">FAQ</a>
+      </div>
+      <div class="footer__col">
+        <h4>Legal</h4>
+        <a href="/privacy">Privacy Policy</a>
+        <a href="/terms">Terms of Service</a>
+        <a href="/sitemap.xml" target="_blank" rel="noopener">Sitemap</a>
       </div>
       <div class="footer__col">
         <h4>Connect</h4>
@@ -54,13 +77,22 @@ const year = new Date().getFullYear()
             </button>
           </div>
         </div>
+        <a href="/contact">Contact</a>
         <a href="https://github.com/eddie7ch/MLEbotics" target="_blank" rel="noopener noreferrer">GitHub</a>
         <a href="https://www.linkedin.com/in/eddiechongtham/" target="_blank" rel="noopener noreferrer">LinkedIn</a>
+        <a href="/rss.xml" target="_blank" rel="noopener">RSS Feed</a>
       </div>
     </div>
   </div>
   <div class="container footer__bottom">
     <p>&copy; {year} MLEbotics. All rights reserved.</p>
+    <div class="footer__bottom-links">
+      <a href="/privacy">Privacy</a>
+      <span aria-hidden="true">&middot;</span>
+      <a href="/terms">Terms</a>
+      <span aria-hidden="true">&middot;</span>
+      <a href="/contact">Contact</a>
+    </div>
   </div>
 </footer>
 
@@ -68,7 +100,97 @@ const year = new Date().getFullYear()
   .footer {
     border-top: 1px solid var(--border);
     padding: 4rem 0 2rem;
+    background: linear-gradient(180deg, rgba(7,10,18,0) 0%, rgba(10,16,28,.55) 100%);
   }
+
+  .footer__top-cta {
+    display: grid;
+    grid-template-columns: 1.15fr .85fr;
+    gap: 1.25rem;
+    margin-bottom: 2.25rem;
+    border: 1px solid rgba(116,209,255,.24);
+    border-radius: 18px;
+    padding: 1.45rem;
+    background:
+      radial-gradient(90% 140% at 100% 0%, rgba(244, 209, 143, .12), transparent 55%),
+      radial-gradient(90% 140% at 0% 100%, rgba(56, 198, 255, .13), transparent 58%),
+      linear-gradient(160deg, rgba(17, 27, 44, .8), rgba(10, 16, 29, .84));
+  }
+  .footer__top-copy {
+    display: flex;
+    flex-direction: column;
+    gap: .55rem;
+  }
+  .footer__top-label {
+    font-size: .68rem;
+    letter-spacing: .11em;
+    text-transform: uppercase;
+    color: #95afd4;
+    font-weight: 700;
+  }
+  .footer__top-copy h2 {
+    font-size: clamp(1.05rem, 2vw, 1.35rem);
+    color: #f3f7ff;
+    font-family: var(--font-display);
+    line-height: 1.22;
+    letter-spacing: -.02em;
+  }
+  .footer__top-copy p {
+    font-size: .84rem;
+    color: #93a9c9;
+    line-height: 1.68;
+  }
+
+  .footer__brief {
+    display: grid;
+    gap: .55rem;
+    align-content: start;
+  }
+  .footer__brief input,
+  .footer__brief textarea {
+    width: 100%;
+    background: rgba(255,255,255,.04);
+    border: 1px solid rgba(130, 150, 190, .28);
+    border-radius: 8px;
+    color: #dbe8fc;
+    padding: .62rem .75rem;
+    font-family: inherit;
+    font-size: .82rem;
+    outline: none;
+    transition: border-color .18s, background .18s;
+  }
+  .footer__brief textarea {
+    resize: vertical;
+    min-height: 70px;
+    max-height: 120px;
+  }
+  .footer__brief input::placeholder,
+  .footer__brief textarea::placeholder {
+    color: #6f84a4;
+  }
+  .footer__brief input:focus,
+  .footer__brief textarea:focus {
+    border-color: rgba(56, 198, 255, .62);
+    background: rgba(56,198,255,.04);
+  }
+  .footer__brief .btn-primary {
+    justify-content: center;
+    font-size: .78rem;
+    padding: .6rem .9rem;
+  }
+
+  .sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+  }
+
   .footer__inner {
     display: flex;
     gap: 4rem;
@@ -77,10 +199,10 @@ const year = new Date().getFullYear()
     margin-bottom: 3rem;
   }
   .logo {
-    font-family: 'Orbitron', monospace;
+    font-family: var(--font-display);
     font-size: .85rem;
-    font-weight: 900;
-    letter-spacing: .06em;
+    font-weight: 700;
+    letter-spacing: .04em;
     color: #fff;
     display: inline-flex;
     align-items: center;
@@ -106,10 +228,10 @@ const year = new Date().getFullYear()
   }
   .footer__col h4 {
     font-size: .68rem;
-    font-weight: 600;
+    font-weight: 700;
     letter-spacing: .1em;
     text-transform: uppercase;
-    color: var(--muted);
+    color: #a7b9d3;
     margin-bottom: .25rem;
   }
   .footer__col a {
@@ -119,8 +241,29 @@ const year = new Date().getFullYear()
     transition: color .15s;
   }
   .footer__col a:hover { color: #fff; }
-  .footer__bottom { border-top: 1px solid var(--border); padding-top: 1.5rem; }
+  .footer__bottom {
+    border-top: 1px solid var(--border);
+    padding-top: 1.5rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: .75rem;
+  }
   .footer__bottom p { font-size: .78rem; color: var(--muted); }
+  .footer__bottom-links {
+    display: flex;
+    align-items: center;
+    gap: .6rem;
+    font-size: .78rem;
+    color: var(--muted);
+  }
+  .footer__bottom-links a {
+    color: var(--muted);
+    text-decoration: none;
+    transition: color .15s;
+  }
+  .footer__bottom-links a:hover { color: #fff; }
 
   /* Email popup */
   .email-wrap { position: relative; }
@@ -140,8 +283,8 @@ const year = new Date().getFullYear()
     position: absolute;
     bottom: calc(100% + 8px);
     left: 0;
-    background: #0f1929;
-    border: 1px solid rgba(0,212,255,.2);
+    background: linear-gradient(170deg, rgba(18, 28, 44, .98), rgba(11, 18, 31, .98));
+    border: 1px solid rgba(116,209,255,.28);
     border-radius: 10px;
     padding: .5rem;
     min-width: 200px;
@@ -175,6 +318,12 @@ const year = new Date().getFullYear()
   .email-popup__option:hover { background: rgba(255,255,255,.07); color: #fff; }
   .email-popup__divider { border: none; border-top: 1px solid rgba(255,255,255,.08); margin: .4rem 0; }
   .email-popup__copy { color: var(--cyan); }
+
+  @media (max-width: 900px) {
+    .footer__top-cta {
+      grid-template-columns: 1fr;
+    }
+  }
 </style>
 
 <script>
@@ -203,4 +352,21 @@ const year = new Date().getFullYear()
   })
 
   popup.addEventListener('click', (e) => e.stopPropagation())
+
+  const briefForm = document.getElementById('footer-brief-form') as HTMLFormElement | null
+  briefForm?.addEventListener('submit', (e) => {
+    e.preventDefault()
+    const data = new FormData(briefForm)
+    const email = (data.get('email') as string || '').trim()
+    const note = (data.get('note') as string || '').trim()
+    if (!email || !note) return
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return
+
+    const subject = encodeURIComponent('Project inquiry from mlebotics.com')
+    const body = encodeURIComponent(`Email: ${email}\n\nProject brief:\n${note}`)
+    window.location.href = `mailto:eddie@mlebotics.com?subject=${subject}&body=${body}`
+    if (typeof window.showToast === 'function') {
+      window.showToast('Email draft opened with your project brief.', 'info', 3200)
+    }
+  })
 </script>

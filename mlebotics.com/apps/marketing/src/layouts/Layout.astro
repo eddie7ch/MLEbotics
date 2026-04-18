@@ -1,29 +1,961 @@
 ---
 import '../styles/global.css'
 import ChatWidget from '@components/ChatWidget.astro'
+import CommandPalette from '@components/CommandPalette.astro'
+import NeuralField from '@components/NeuralField.astro'
+import { ViewTransitions } from 'astro:transitions'
 
 interface Props {
   title: string
   description?: string
+  image?: string
+  type?: string
 }
-const { title, description = 'Building modular AI, automation, and robotics tools that remove friction and make life easier.' } = Astro.props
+const {
+  title,
+  description = 'Building modular AI, automation, and robotics tools that remove friction and make life easier.',
+  image = '/og-image.png',
+  type = 'website',
+} = Astro.props
+
+const canonicalUrl = new URL(Astro.url.pathname, 'https://mlebotics.com').toString()
+const ogImage = new URL(image, 'https://mlebotics.com').toString()
+const pageRouteKey = Astro.url.pathname === '/'
+  ? 'home'
+  : Astro.url.pathname.startsWith('/projects')
+    ? 'projects'
+    : Astro.url.pathname.startsWith('/contact')
+      ? 'contact'
+      : 'other'
+
+const jsonLd = {
+  '@context': 'https://schema.org',
+  '@type': 'Organization',
+  name: 'MLEbotics',
+  url: 'https://mlebotics.com',
+  logo: 'https://mlebotics.com/favicon.svg',
+  description,
+  founder: { '@type': 'Person', name: 'Eddie Chongtham' },
+  sameAs: [
+    'https://github.com/MLEbotics',
+    'https://www.linkedin.com/in/eddiechongtham/',
+  ],
+}
 ---
 
 <!doctype html>
-<html lang="en">
+<html lang="en" data-route={pageRouteKey}>
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <meta name="description" content={description} />
+
+    <!-- Primary SEO -->
     <title>{title} — MLEbotics</title>
+    <meta name="description" content={description} />
+    <meta name="robots" content="index, follow" />
+    <link rel="canonical" href={canonicalUrl} />
+
+    <!-- Open Graph -->
+    <meta property="og:type" content={type} />
+    <meta property="og:site_name" content="MLEbotics" />
+    <meta property="og:title" content={`${title} — MLEbotics`} />
+    <meta property="og:description" content={description} />
+    <meta property="og:url" content={canonicalUrl} />
+    <meta property="og:image" content={ogImage} />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:locale" content="en_US" />
+
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content={`${title} — MLEbotics`} />
+    <meta name="twitter:description" content={description} />
+    <meta name="twitter:image" content={ogImage} />
+
+    <!-- PWA / Mobile -->
+    <meta name="theme-color" content="#070a12" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="MLEbotics" />
+    <link rel="manifest" href="/manifest.json" />
+
+    <!-- Icons -->
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-    <link rel="apple-touch-icon" href="/favicon.svg" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+
+    <!-- RSS feed discovery -->
+    <link rel="alternate" type="application/rss+xml" title="MLEbotics Blog" href="/rss.xml" />
+
+    <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Orbitron:wght@700;900&display=swap" rel="stylesheet" />
+    <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Orbitron:wght@700&family=Space+Grotesk:wght@600;700&display=swap" />
+    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Orbitron:wght@700&family=Space+Grotesk:wght@600;700&display=swap" rel="stylesheet" />
+
+    <!-- View Transitions (smooth page navigation) -->
+    <ViewTransitions />
+
+    <script is:inline>
+      // Apply the queued transition direction before paint so route choreography stays consistent.
+      (() => {
+        try {
+          const dir = sessionStorage.getItem('mle-vt-dir')
+          const feel = sessionStorage.getItem('mle-vt-feel')
+          const pair = sessionStorage.getItem('mle-vt-pair')
+          if (dir) { document.documentElement.setAttribute('data-vt-dir', dir); sessionStorage.removeItem('mle-vt-dir') }
+          if (feel) { document.documentElement.setAttribute('data-vt-feel', feel); sessionStorage.removeItem('mle-vt-feel') }
+          if (pair) { document.documentElement.setAttribute('data-vt-pair', pair); sessionStorage.removeItem('mle-vt-pair') }
+        } catch {
+          // no-op
+        }
+      })()
+    </script>
+
+    <!-- JSON-LD Structured Data -->
+    <script type="application/ld+json" set:html={JSON.stringify(jsonLd)} />
+
+    <!-- Google Analytics 4 -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-J9CC0S39GR"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', 'G-J9CC0S39GR');
+    </script>
   </head>
-  <body>
+  <body data-route={pageRouteKey}>
+    <!-- Neural intelligence field (behind everything) -->
+    <NeuralField />
+
+    <!-- Cursor spotlight (desktop only) -->
+    <div id="cursor-spotlight" aria-hidden="true"></div>
+
+    <!-- Scroll progress bar -->
+    <div id="scroll-progress" aria-hidden="true"></div>
+
+    <!-- Skip to main content (accessibility) -->
+    <a href="#main-content" class="skip-link">Skip to main content</a>
     <slot />
     <ChatWidget />
+
+    <!-- Back to top button -->
+    <button id="back-to-top" class="back-to-top" aria-label="Back to top" title="Back to top">
+      <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="18 15 12 9 6 15"/></svg>
+    </button>
+
+    <!-- Scroll-reveal observer + scroll progress + back to top -->
+    <script>
+      // Scroll-reveal
+      const revealObserver = new IntersectionObserver(
+        (entries) => {
+          entries.forEach((e) => {
+            if (e.isIntersecting) {
+              e.target.classList.add('revealed')
+              revealObserver.unobserve(e.target)
+            }
+          })
+        },
+        { threshold: 0.12 }
+      )
+      document.querySelectorAll('.reveal').forEach((el) => revealObserver.observe(el))
+
+      // Neural prediction-reveal (foresight mode)
+      const neuralRevealObserver = new IntersectionObserver(
+        (entries) => {
+          entries.forEach((e) => {
+            if (e.isIntersecting) {
+              e.target.classList.add('neural-seen')
+              neuralRevealObserver.unobserve(e.target)
+            }
+          })
+        },
+        { threshold: 0.08, rootMargin: '0px 0px -40px 0px' }
+      )
+      document.querySelectorAll('.neural-reveal').forEach((el) => neuralRevealObserver.observe(el))
+
+      // Scroll progress bar
+      const progressBar = document.getElementById('scroll-progress')
+      const backToTop = document.getElementById('back-to-top')
+      function onScroll() {
+        const scrolled = window.scrollY
+        const total = document.documentElement.scrollHeight - window.innerHeight
+        const pct = total > 0 ? (scrolled / total) * 100 : 0
+        if (progressBar) progressBar.style.width = pct + '%'
+        if (backToTop) {
+          if (scrolled > 400) {
+            backToTop.classList.add('visible')
+          } else {
+            backToTop.classList.remove('visible')
+          }
+        }
+      }
+      window.addEventListener('scroll', onScroll, { passive: true })
+
+      // Back to top click
+      backToTop?.addEventListener('click', () => {
+        window.scrollTo({ top: 0, behavior: 'smooth' })
+      })
+
+      // Route-to-route transition choreography for home -> projects -> contact.
+      const routeOrder = { home: 0, projects: 1, contact: 2 }
+      const getRouteKey = (path) => {
+        if (path === '/') return 'home'
+        if (path.startsWith('/projects')) return 'projects'
+        if (path.startsWith('/contact')) return 'contact'
+        return 'other'
+      }
+
+      const currentKey = getRouteKey(window.location.pathname)
+      document.querySelectorAll('a[href]').forEach((a) => {
+        a.addEventListener('click', (e) => {
+          if (e.defaultPrevented) return
+          if (a.target && a.target !== '_self') return
+          if (e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return
+          const href = a.getAttribute('href')
+          if (!href || href.startsWith('#') || href.startsWith('mailto:') || href.startsWith('tel:')) return
+
+          let nextUrl
+          try {
+            nextUrl = new URL(href, window.location.href)
+          } catch {
+            return
+          }
+
+          if (nextUrl.origin !== window.location.origin) return
+          const nextKey = getRouteKey(nextUrl.pathname)
+          if (!(currentKey in routeOrder) || !(nextKey in routeOrder)) return
+
+          const delta = routeOrder[nextKey] - routeOrder[currentKey]
+          const dir = delta === 0 ? 'cross' : delta > 0 ? 'forward' : 'back'
+          const feel = nextKey === 'contact' ? 'snappy' : 'cinematic'
+          const pair = currentKey !== nextKey ? `${currentKey}-to-${nextKey}` : ''
+          try {
+            sessionStorage.setItem('mle-vt-dir', dir)
+            sessionStorage.setItem('mle-vt-feel', feel)
+            if (pair) sessionStorage.setItem('mle-vt-pair', pair)
+          } catch {
+            // no-op
+          }
+        })
+      })
+    </script>
+
+    <!-- Cursor spotlight -->
+    <script>
+      ;(function () {
+        const spotlight = document.getElementById('cursor-spotlight')
+        if (!spotlight) return
+        // Only enable on pointer-capable devices
+        if (!window.matchMedia('(hover: hover)').matches) return
+        spotlight.style.opacity = '1'
+        document.addEventListener('mousemove', (e) => {
+          spotlight.style.setProperty('--cx', e.clientX + 'px')
+          spotlight.style.setProperty('--cy', e.clientY + 'px')
+        }, { passive: true })
+      })()
+    </script>
+
+    <!-- Toast notification system -->
+    <div id="toast-container" aria-live="polite" aria-atomic="false"></div>
+    <script>
+      ;(function () {
+        const container = document.getElementById('toast-container')
+        window.showToast = function (message, type = 'success', duration = 3500) {
+          if (!container) return
+          const toast = document.createElement('div')
+          toast.className = `toast toast--${type}`
+          const icons = { success: '✓', error: '✕', info: 'ℹ' }
+          toast.innerHTML = `<span class="toast__icon" aria-hidden="true">${icons[type] || '✓'}</span><span class="toast__msg">${message}</span>`
+          toast.setAttribute('role', 'status')
+          container.appendChild(toast)
+          requestAnimationFrame(() => toast.classList.add('toast--visible'))
+          setTimeout(() => {
+            toast.classList.remove('toast--visible')
+            setTimeout(() => toast.remove(), 350)
+          }, duration)
+        }
+      })()
+    </script>
+
+    <!-- Cookie consent banner -->
+    <div id="cookie-banner" class="cookie-banner" role="region" aria-label="Cookie consent" hidden>
+      <p class="cookie-banner__text">
+        We use cookies to improve your experience and measure site performance.
+        <a href="/privacy" class="cookie-banner__link">Learn more</a>
+      </p>
+      <div class="cookie-banner__actions">
+        <button id="cookie-decline" class="cookie-btn cookie-btn--ghost">Decline</button>
+        <button id="cookie-accept" class="cookie-btn cookie-btn--primary">Accept all</button>
+      </div>
+    </div>
+    <script>
+      ;(function () {
+        const banner = document.getElementById('cookie-banner')
+        const consent = localStorage.getItem('cookie-consent')
+        const chatWidget = document.getElementById('chat-widget')
+
+        function showBanner() {
+          if (!banner) return
+          banner.hidden = false
+          // Push chat widget up above the banner
+          const h = banner.getBoundingClientRect().height
+          if (chatWidget) chatWidget.style.bottom = (h + 16) + 'px'
+        }
+        function hideBanner() {
+          banner?.classList.add('cookie-banner--hide')
+          if (chatWidget) chatWidget.style.bottom = ''
+          setTimeout(() => banner ? banner.hidden = true : null, 400)
+        }
+
+        if (!consent && banner) showBanner()
+        document.getElementById('cookie-accept')?.addEventListener('click', () => {
+          localStorage.setItem('cookie-consent', 'accepted')
+          hideBanner()
+        })
+        document.getElementById('cookie-decline')?.addEventListener('click', () => {
+          localStorage.setItem('cookie-consent', 'declined')
+          hideBanner()
+        })
+      })()
+    </script>
+
+    <!-- Keyboard shortcuts panel -->
+    <div id="shortcuts-overlay" class="shortcuts-overlay" aria-hidden="true" role="dialog" aria-modal="true" aria-label="Keyboard shortcuts">
+      <div class="shortcuts-box">
+        <div class="shortcuts-header">
+          <h2 class="shortcuts-title">Keyboard shortcuts</h2>
+          <button id="shortcuts-close" class="shortcuts-close" aria-label="Close shortcuts panel">&times;</button>
+        </div>
+        <div class="shortcuts-grid">
+          <div class="shortcut-group">
+            <h3>Navigation</h3>
+            <div class="shortcut-row"><span class="shortcut-desc">Command palette</span><div class="shortcut-keys"><kbd>Ctrl</kbd><kbd>K</kbd></div></div>
+            <div class="shortcut-row"><span class="shortcut-desc">Show shortcuts</span><div class="shortcut-keys"><kbd>?</kbd></div></div>
+            <div class="shortcut-row"><span class="shortcut-desc">Home</span><div class="shortcut-keys"><kbd>G</kbd><kbd>H</kbd></div></div>
+            <div class="shortcut-row"><span class="shortcut-desc">Projects</span><div class="shortcut-keys"><kbd>G</kbd><kbd>P</kbd></div></div>
+            <div class="shortcut-row"><span class="shortcut-desc">Blog</span><div class="shortcut-keys"><kbd>G</kbd><kbd>B</kbd></div></div>
+            <div class="shortcut-row"><span class="shortcut-desc">About</span><div class="shortcut-keys"><kbd>G</kbd><kbd>A</kbd></div></div>
+          </div>
+          <div class="shortcut-group">
+            <h3>Actions</h3>
+            <div class="shortcut-row"><span class="shortcut-desc">Back to top</span><div class="shortcut-keys"><kbd>T</kbd></div></div>
+            <div class="shortcut-row"><span class="shortcut-desc">Contact</span><div class="shortcut-keys"><kbd>G</kbd><kbd>C</kbd></div></div>
+            <div class="shortcut-row"><span class="shortcut-desc">Changelog</span><div class="shortcut-keys"><kbd>G</kbd><kbd>L</kbd></div></div>
+            <div class="shortcut-row"><span class="shortcut-desc">Close / dismiss</span><div class="shortcut-keys"><kbd>Esc</kbd></div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <script>
+      ;(function () {
+        const overlay   = document.getElementById('shortcuts-overlay')
+        const closeBtn  = document.getElementById('shortcuts-close')
+        let gBuffer = ''
+        let gTimer: ReturnType<typeof setTimeout> | null = null
+
+        function openShortcuts() {
+          overlay?.removeAttribute('aria-hidden')
+          overlay?.classList.add('open')
+          document.body.style.overflow = 'hidden'
+        }
+        function closeShortcuts() {
+          overlay?.setAttribute('aria-hidden', 'true')
+          overlay?.classList.remove('open')
+          document.body.style.overflow = ''
+        }
+        closeBtn?.addEventListener('click', closeShortcuts)
+        overlay?.addEventListener('click', (e) => { if (e.target === overlay) closeShortcuts() })
+
+        const goTo = (href: string) => { window.location.href = href }
+        document.addEventListener('keydown', (e) => {
+          const tag = (e.target as HTMLElement).tagName.toLowerCase()
+          const inInput = tag === 'input' || tag === 'textarea' || tag === 'select'
+          if (inInput) return
+          const isOpen = overlay?.classList.contains('open')
+          if (e.key === 'Escape') { closeShortcuts(); return }
+          if (e.key === '?') { e.preventDefault(); isOpen ? closeShortcuts() : openShortcuts(); return }
+          if (e.key === 't' || e.key === 'T') { window.scrollTo({ top: 0, behavior: 'smooth' }); return }
+          // G sequences
+          if (e.key === 'g' || e.key === 'G') {
+            gBuffer = 'g'
+            if (gTimer) clearTimeout(gTimer)
+            gTimer = setTimeout(() => { gBuffer = '' }, 1000)
+            return
+          }
+          if (gBuffer === 'g') {
+            gBuffer = ''
+            if (gTimer) clearTimeout(gTimer)
+            const k = e.key.toLowerCase()
+            if (k === 'h') goTo('/')
+            else if (k === 'p') goTo('/projects')
+            else if (k === 'b') goTo('/blog')
+            else if (k === 'a') goTo('/about')
+            else if (k === 'c') goTo('/contact')
+            else if (k === 'l') goTo('/changelog')
+          }
+        })
+      })()
+    </script>
+
+    <CommandPalette />
   </body>
 </html>
+
+<style is:global>
+  .skip-link {
+    position: absolute;
+    top: -100%;
+    left: 1rem;
+    background: var(--cyan);
+    color: #06080f;
+    font-weight: 700;
+    font-size: .875rem;
+    padding: .5rem 1rem;
+    border-radius: 0 0 8px 8px;
+    text-decoration: none;
+    z-index: 9999;
+    transition: top .15s;
+  }
+  .skip-link:focus { top: 0; }
+
+  /* Cursor spotlight */
+  #cursor-spotlight {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 700px;
+    height: 700px;
+    border-radius: 50%;
+    pointer-events: none;
+    z-index: 1;
+    transform: translate(var(--cx, -9999px), var(--cy, -9999px)) translate(-50%, -50%);
+    background: radial-gradient(circle, rgba(0,212,255,.045) 0%, rgba(0,212,255,.015) 35%, transparent 65%);
+    will-change: transform;
+    opacity: 0;
+    transition: opacity .5s;
+  }
+
+  /* Smooth page transitions */
+  ::view-transition-old(root) {
+    animation: root-old .2s cubic-bezier(.22,1,.36,1) forwards;
+  }
+  ::view-transition-new(root) {
+    animation: root-new .28s cubic-bezier(.22,1,.36,1) forwards;
+  }
+
+  html[data-vt-feel='cinematic']::view-transition-old(root) {
+    animation-duration: .28s;
+  }
+  html[data-vt-feel='cinematic']::view-transition-new(root) {
+    animation-duration: .38s;
+  }
+  html[data-vt-feel='snappy']::view-transition-old(root) {
+    animation-duration: .14s;
+  }
+  html[data-vt-feel='snappy']::view-transition-new(root) {
+    animation-duration: .2s;
+  }
+
+  html[data-vt-dir='forward']::view-transition-old(root) {
+    animation-name: route-old-forward;
+  }
+  html[data-vt-dir='forward']::view-transition-new(root) {
+    animation-name: route-new-forward;
+  }
+  html[data-vt-dir='back']::view-transition-old(root) {
+    animation-name: route-old-back;
+  }
+  html[data-vt-dir='back']::view-transition-new(root) {
+    animation-name: route-new-back;
+  }
+
+  html[data-route='home']::view-transition-new(root) {
+    animation-name: root-new, route-signature-home;
+    animation-duration: .28s, .42s;
+    animation-timing-function: cubic-bezier(.22,1,.36,1), ease-out;
+  }
+  html[data-route='projects']::view-transition-new(root) {
+    animation-name: root-new, route-signature-projects;
+    animation-duration: .26s, .3s;
+    animation-timing-function: cubic-bezier(.22,1,.36,1), cubic-bezier(.2,.9,.24,1);
+  }
+  html[data-route='contact']::view-transition-new(root) {
+    animation-name: route-new-contact;
+    animation-duration: .2s;
+    animation-timing-function: ease-out;
+  }
+
+  html[data-vt-dir='forward'][data-route='home']::view-transition-new(root) {
+    animation-name: route-new-forward, route-signature-home;
+    animation-duration: .3s, .44s;
+  }
+  html[data-vt-dir='back'][data-route='home']::view-transition-new(root) {
+    animation-name: route-new-back, route-signature-home;
+    animation-duration: .3s, .44s;
+  }
+  html[data-vt-dir='forward'][data-route='projects']::view-transition-new(root) {
+    animation-name: route-new-forward, route-signature-projects;
+    animation-duration: .26s, .3s;
+  }
+  html[data-vt-dir='back'][data-route='projects']::view-transition-new(root) {
+    animation-name: route-new-back, route-signature-projects;
+    animation-duration: .26s, .3s;
+  }
+  html[data-vt-dir='forward'][data-route='contact']::view-transition-new(root),
+  html[data-vt-dir='back'][data-route='contact']::view-transition-new(root) {
+    animation-name: route-new-contact;
+    animation-duration: .18s;
+  }
+
+  @keyframes root-old {
+    to { opacity: 0; transform: translateY(4px); filter: blur(1px); }
+  }
+  @keyframes root-new {
+    from { opacity: 0; transform: translateY(-4px); filter: blur(1px); }
+  }
+  @keyframes route-old-forward {
+    to { opacity: 0; transform: translateX(-22px) scale(.993); filter: blur(1.5px); }
+  }
+  @keyframes route-new-forward {
+    from { opacity: 0; transform: translateX(24px) scale(.996); filter: blur(1.5px); }
+  }
+  @keyframes route-old-back {
+    to { opacity: 0; transform: translateX(22px) scale(.993); filter: blur(1.5px); }
+  }
+  @keyframes route-new-back {
+    from { opacity: 0; transform: translateX(-24px) scale(.996); filter: blur(1.5px); }
+  }
+  /* ── Route-pair specific overrides ──────────────────────────── */
+
+  /* home → projects: dramatic. Old page scales back, new page blooms in from a tighter scale. */
+  html[data-vt-pair='home-to-projects']::view-transition-old(root) {
+    animation: pair-home-proj-old .3s cubic-bezier(.4,0,.2,1) forwards;
+  }
+  html[data-vt-pair='home-to-projects']::view-transition-new(root) {
+    animation: pair-home-proj-new .38s cubic-bezier(.16,1.18,.3,1) forwards;
+  }
+  @keyframes pair-home-proj-old {
+    to { opacity: 0; transform: translateX(-32px) scale(.985); filter: blur(2px) brightness(.85); }
+  }
+  @keyframes pair-home-proj-new {
+    from { opacity: 0; transform: translateX(28px) scale(.992); filter: blur(2px) contrast(1.08); }
+    to { opacity: 1; transform: translateX(0) scale(1); filter: blur(0) contrast(1); }
+  }
+
+  /* projects → home: reverse — new home blooms back warmer */
+  html[data-vt-pair='projects-to-home']::view-transition-old(root) {
+    animation: pair-proj-home-old .28s cubic-bezier(.4,0,.2,1) forwards;
+  }
+  html[data-vt-pair='projects-to-home']::view-transition-new(root) {
+    animation: pair-proj-home-new .42s cubic-bezier(.16,1,.3,1) forwards;
+  }
+  @keyframes pair-proj-home-old {
+    to { opacity: 0; transform: translateX(28px) scale(.988); filter: blur(1.5px) contrast(1.05); }
+  }
+  @keyframes pair-proj-home-new {
+    from { opacity: 0; transform: translateX(-24px) scale(.994); filter: brightness(1.18) saturate(1.15) blur(1px); }
+    to { opacity: 1; transform: translateX(0) scale(1); filter: brightness(1) saturate(1) blur(0); }
+  }
+
+  /* projects → contact: ultra-clean, barely any movement, just a crisp opacity wipe */
+  html[data-vt-pair='projects-to-contact']::view-transition-old(root) {
+    animation: pair-proj-contact-old .14s ease-in forwards;
+  }
+  html[data-vt-pair='projects-to-contact']::view-transition-new(root) {
+    animation: pair-proj-contact-new .22s cubic-bezier(.22,1,.36,1) forwards;
+  }
+  @keyframes pair-proj-contact-old {
+    to { opacity: 0; transform: translateY(5px); filter: blur(.5px); }
+  }
+  @keyframes pair-proj-contact-new {
+    from { opacity: 0; transform: translateY(6px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  /* contact → projects: snappy slide back */
+  html[data-vt-pair='contact-to-projects']::view-transition-old(root) {
+    animation: pair-contact-proj-old .14s ease-in forwards;
+  }
+  html[data-vt-pair='contact-to-projects']::view-transition-new(root) {
+    animation: pair-contact-proj-new .2s cubic-bezier(.22,1,.36,1) forwards;
+  }
+  @keyframes pair-contact-proj-old {
+    to { opacity: 0; transform: translateY(-4px); filter: blur(.4px); }
+  }
+  @keyframes pair-contact-proj-new {
+    from { opacity: 0; transform: scale(.998) translateY(-5px); }
+    to { opacity: 1; transform: scale(1) translateY(0); }
+  }
+
+  /* home → contact: bridge, calmer than home→projects but not as terse as proj→contact */
+  html[data-vt-pair='home-to-contact']::view-transition-old(root) {
+    animation: pair-home-contact-old .18s ease-in forwards;
+  }
+  html[data-vt-pair='home-to-contact']::view-transition-new(root) {
+    animation: pair-home-contact-new .26s cubic-bezier(.22,1,.36,1) forwards;
+  }
+  @keyframes pair-home-contact-old {
+    to { opacity: 0; transform: translateX(-16px); filter: blur(1px); }
+  }
+  @keyframes pair-home-contact-new {
+    from { opacity: 0; transform: translateX(12px); filter: blur(.6px); }
+    to { opacity: 1; transform: translateX(0); filter: blur(0); }
+  }
+
+  /* contact → home: wide warm return */
+  html[data-vt-pair='contact-to-home']::view-transition-old(root) {
+    animation: pair-contact-home-old .18s ease-in forwards;
+  }
+  html[data-vt-pair='contact-to-home']::view-transition-new(root) {
+    animation: pair-contact-home-new .38s cubic-bezier(.16,1,.3,1) forwards;
+  }
+  @keyframes pair-contact-home-old {
+    to { opacity: 0; transform: translateX(16px); filter: blur(1px); }
+  }
+  @keyframes pair-contact-home-new {
+    from { opacity: 0; transform: translateX(-14px); filter: brightness(1.1) saturate(1.08) blur(.8px); }
+    to { opacity: 1; transform: translateX(0); filter: brightness(1) saturate(1) blur(0); }
+  }
+
+  /* ── Generic signatures (used when no pair match) ───────────── */
+  @keyframes route-signature-home {
+    from { filter: brightness(1.14) saturate(1.12); }
+    to { filter: brightness(1) saturate(1); }
+  }
+  @keyframes route-signature-projects {
+    from { transform: scale(1.004); filter: contrast(1.06); }
+    to { transform: scale(1); filter: contrast(1); }
+  }
+  @keyframes route-new-contact {
+    from { opacity: 0; transform: translateY(8px); filter: blur(.4px); }
+    to { opacity: 1; transform: translateY(0); filter: blur(0); }
+  }
+
+  @media (max-width: 900px) {
+    ::view-transition-old(root),
+    ::view-transition-new(root) {
+      animation-duration: .16s;
+    }
+
+    html[data-vt-feel='cinematic']::view-transition-old(root) {
+      animation-duration: .18s;
+    }
+    html[data-vt-feel='cinematic']::view-transition-new(root) {
+      animation-duration: .24s;
+    }
+    html[data-vt-feel='snappy']::view-transition-old(root) {
+      animation-duration: .12s;
+    }
+    html[data-vt-feel='snappy']::view-transition-new(root) {
+      animation-duration: .16s;
+    }
+
+    html[data-route='home']::view-transition-new(root),
+    html[data-route='projects']::view-transition-new(root),
+    html[data-route='contact']::view-transition-new(root) {
+      animation-duration: .18s;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    ::view-transition-old(root),
+    ::view-transition-new(root),
+    html[data-vt-dir='forward']::view-transition-old(root),
+    html[data-vt-dir='forward']::view-transition-new(root),
+    html[data-vt-dir='back']::view-transition-old(root),
+    html[data-vt-dir='back']::view-transition-new(root),
+    html[data-vt-pair]::view-transition-old(root),
+    html[data-vt-pair]::view-transition-new(root) {
+      animation: none !important;
+    }
+  }
+
+  /* ── Neural field UI symbiosis ────────────────────────────────────── */
+
+  /* CSS variable defaults — updated at ~10fps by NeuralField.astro */
+  :root {
+    --nf-pulse: 0;
+    --nf-cx: 50%;
+    --nf-cy: 50%;
+  }
+
+  /* Buttons pulse with the field */
+  .btn,
+  button:not([data-no-neural]),
+  a.btn,
+  [role='button'] {
+    transition: box-shadow .45s ease, border-color .45s ease;
+  }
+  .btn:hover,
+  button:not([data-no-neural]):hover,
+  a.btn:hover {
+    box-shadow: 0 0 18px rgba(0,175,255,.22), 0 0 44px rgba(77,255,255,.08),
+                inset 0 0 10px rgba(0,175,255,.06);
+  }
+
+  /* Cards feel like neurons firing */
+  .card,
+  .project,
+  [data-neural-card] {
+    transition: box-shadow .5s ease, transform .5s cubic-bezier(.22,1,.36,1);
+  }
+  .card:hover,
+  .project:hover,
+  [data-neural-card]:hover {
+    box-shadow: 0 0 28px rgba(0,175,255,.14), 0 0 60px rgba(77,255,255,.05);
+  }
+
+  /* Neural reveal: content appears as foreseen (silhouette → clarity) */
+  .neural-reveal {
+    opacity: 0;
+    filter: blur(4px) brightness(.4);
+    transform: translateY(14px) scale(.985);
+    transition:
+      opacity   .75s cubic-bezier(.16,1,.3,1),
+      filter    .75s cubic-bezier(.16,1,.3,1),
+      transform .75s cubic-bezier(.16,1,.3,1);
+  }
+  .neural-reveal.neural-seen {
+    opacity: 1;
+    filter: blur(0) brightness(1);
+    transform: translateY(0) scale(1);
+  }
+  .neural-reveal-delay-1 { transition-delay: .1s; }
+  .neural-reveal-delay-2 { transition-delay: .2s; }
+  .neural-reveal-delay-3 { transition-delay: .32s; }
+  .neural-reveal-delay-4 { transition-delay: .46s; }
+
+  /* ── Focus-visible ring (keyboard nav) ──────────────────────────────── */
+  :focus-visible {
+    outline: 2px solid var(--cyan);
+    outline-offset: 3px;
+    border-radius: 4px;
+  }
+
+  /* Scroll-reveal */
+  .reveal {
+    opacity: 0;
+    transform: translateY(28px);
+    transition: opacity .55s cubic-bezier(.22,1,.36,1), transform .55s cubic-bezier(.22,1,.36,1);
+  }
+  .reveal.revealed {
+    opacity: 1;
+    transform: none;
+  }
+  .reveal-delay-1 { transition-delay: .1s; }
+  .reveal-delay-2 { transition-delay: .2s; }
+  .reveal-delay-3 { transition-delay: .3s; }
+  .reveal-delay-4 { transition-delay: .4s; }
+
+  /* Scroll progress bar */
+  #scroll-progress {
+    position: fixed;
+    top: 0;
+    left: 0;
+    height: 3px;
+    width: 0%;
+    background: linear-gradient(90deg, var(--cyan), var(--green));
+    z-index: 9999;
+    transition: width .1s linear;
+    pointer-events: none;
+  }
+
+  /* Back to top */
+  .back-to-top {
+    position: fixed;
+    bottom: 5.5rem;
+    right: 1.5rem;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: rgba(13,17,23,.9);
+    border: 1px solid var(--border);
+    color: var(--muted);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    z-index: 998;
+    opacity: 0;
+    transform: translateY(12px);
+    pointer-events: none;
+    transition: opacity .25s, transform .25s, border-color .15s, color .15s;
+    backdrop-filter: blur(8px);
+  }
+  .back-to-top.visible {
+    opacity: 1;
+    transform: none;
+    pointer-events: all;
+  }
+  .back-to-top:hover {
+    border-color: var(--cyan);
+    color: var(--cyan);
+  }
+
+  /* ── Toast notifications ───────────────────────────────── */
+  #toast-container {
+    position: fixed;
+    bottom: 1.5rem;
+    right: 1.5rem;
+    z-index: 9998;
+    display: flex;
+    flex-direction: column;
+    gap: .6rem;
+    pointer-events: none;
+    max-width: 360px;
+  }
+  .toast {
+    display: flex;
+    align-items: center;
+    gap: .65rem;
+    padding: .75rem 1.1rem;
+    border-radius: 10px;
+    font-size: .875rem;
+    font-weight: 500;
+    color: #fff;
+    backdrop-filter: blur(12px);
+    border: 1px solid rgba(255,255,255,.1);
+    opacity: 0;
+    transform: translateX(12px);
+    transition: opacity .3s, transform .3s;
+    pointer-events: auto;
+  }
+  .toast--visible { opacity: 1; transform: none; }
+  .toast--success { background: rgba(0,255,136,.18); border-color: rgba(0,255,136,.3); }
+  .toast--error   { background: rgba(239,68,68,.18);  border-color: rgba(239,68,68,.3); }
+  .toast--info    { background: rgba(0,212,255,.18);  border-color: rgba(0,212,255,.3); }
+  .toast__icon { font-size: .9rem; flex-shrink: 0; }
+  .toast__msg  { line-height: 1.4; }
+
+  /* ── Cookie consent banner ─────────────────────────────── */
+  .cookie-banner {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    z-index: 9990;
+    background: rgba(10,14,20,1);
+    border-top: 1px solid rgba(255,255,255,.1);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    padding: .85rem 1.5rem;
+    padding-bottom: calc(.85rem + env(safe-area-inset-bottom, 0px));
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    flex-wrap: nowrap;
+    transition: transform .4s cubic-bezier(.22,1,.36,1), opacity .4s;
+  }
+  /* Extend background flush to the very bottom edge (safe area / browser chrome) */
+  .cookie-banner::after {
+    content: '';
+    position: absolute;
+    bottom: -100px;
+    left: 0;
+    right: 0;
+    height: 100px;
+    background: rgba(10,14,20,1);
+    pointer-events: none;
+  }
+  .cookie-banner--hide { transform: translateY(150%); opacity: 0; pointer-events: none; }
+  .cookie-banner__text {
+    font-size: .82rem;
+    color: #94a3b8;
+    line-height: 1.5;
+    flex: 1;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    min-width: 0;
+  }
+  @media (max-width: 600px) {
+    .cookie-banner { flex-wrap: wrap; }
+    .cookie-banner__text { white-space: normal; overflow: visible; text-overflow: unset; }
+  }
+  .cookie-banner__link { color: var(--cyan); text-decoration: underline; white-space: nowrap; }
+  .cookie-banner__actions { display: flex; gap: .5rem; flex-shrink: 0; align-items: center; }
+  .cookie-btn {
+    font-size: .78rem;
+    font-weight: 600;
+    border-radius: 7px;
+    padding: .4rem .9rem;
+    cursor: pointer;
+    font-family: inherit;
+    white-space: nowrap;
+    transition: opacity .15s, background .15s;
+  }
+  .cookie-btn:hover { opacity: .85; }
+  .cookie-btn--ghost   { background: transparent; border: 1px solid rgba(255,255,255,.1); color: #64748b; }
+  .cookie-btn--primary { background: var(--cyan); border: none; color: #06080f; font-weight: 700; }
+
+  /* ── Keyboard shortcuts overlay ────────────────────────── */
+  .shortcuts-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,.65);
+    backdrop-filter: blur(6px);
+    z-index: 10001;
+    align-items: center;
+    justify-content: center;
+  }
+  .shortcuts-overlay.open { display: flex; }
+  .shortcuts-box {
+    background: #0d1117;
+    border: 1px solid #2d3748;
+    border-radius: 16px;
+    padding: 1.75rem;
+    width: min(580px, 92vw);
+    max-height: 80vh;
+    overflow-y: auto;
+    box-shadow: 0 32px 80px rgba(0,0,0,.7);
+    animation: cmd-in .15s ease;
+  }
+  .shortcuts-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 1.5rem;
+  }
+  .shortcuts-title { font-size: 1rem; font-weight: 700; color: #fff; }
+  .shortcuts-close { background: none; border: none; color: #64748b; font-size: 1.4rem; cursor: pointer; line-height: 1; padding: .15rem; }
+  .shortcuts-close:hover { color: #fff; }
+  .shortcuts-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; }
+  @media (max-width: 480px) { .shortcuts-grid { grid-template-columns: 1fr; } }
+  .shortcut-group h3 { font-size: .7rem; font-weight: 700; text-transform: uppercase; letter-spacing: .08em; color: #475569; margin-bottom: .85rem; }
+  .shortcut-row { display: flex; align-items: center; justify-content: space-between; gap: .5rem; margin-bottom: .6rem; }
+  .shortcut-desc { font-size: .825rem; color: #94a3b8; }
+  .shortcut-keys { display: flex; gap: .25rem; }
+  .shortcut-keys kbd {
+    font-size: .65rem;
+    background: #1e293b;
+    border: 1px solid #2d3748;
+    border-bottom-width: 2px;
+    border-radius: 5px;
+    padding: .2rem .45rem;
+    color: #e2e8f0;
+    font-family: inherit;
+    white-space: nowrap;
+  }
+
+  /* ── Print styles ──────────────────────────────────────── */
+  @media print {
+    #scroll-progress,
+    .back-to-top,
+    #toast-container,
+    .cookie-banner,
+    .shortcuts-overlay,
+    #cmd-overlay,
+    .header,
+    .footer,
+    .announce-bar,
+    .chat-widget { display: none !important; }
+    body { background: #fff !important; color: #000 !important; }
+    a { color: #000 !important; }
+    .card { border: 1px solid #ccc !important; background: #fff !important; }
+    h1,h2,h3,h4 { color: #000 !important; }
+    .gradient-text { -webkit-text-fill-color: #000 !important; background: none !important; }
+    .container { max-width: 100% !important; padding: 0 !important; }
+  }
+</style>

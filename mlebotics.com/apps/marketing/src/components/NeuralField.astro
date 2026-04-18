@@ -1,0 +1,648 @@
+---
+// NeuralField.astro v2 — Living Alien Intelligence Interface
+// Interactive upgrades: cursor comet trail · lightning forks on click ·
+// idle dreaming · excitement burst · color waves · hover magnification ·
+// drag-draw tendrils · shockwave displacement · floating whispers
+---
+
+<canvas id="neural-canvas" aria-hidden="true"></canvas>
+<div id="neural-whisper-pool" aria-hidden="true"></div>
+
+<style>
+  #neural-canvas {
+    position: fixed;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    z-index: 0;
+    opacity: 0;
+    transition: opacity 1.6s ease;
+  }
+  #neural-canvas.nf-ready { opacity: 1; }
+
+  /* Floating whispers — positioned near cursor */
+  #neural-whisper-pool {
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    z-index: 200;
+    overflow: hidden;
+  }
+  .nf-whisper {
+    position: absolute;
+    font-size: .62rem;
+    letter-spacing: .24em;
+    font-family: 'SF Mono', 'Fira Code', ui-monospace, monospace;
+    text-transform: lowercase;
+    white-space: nowrap;
+    user-select: none;
+    opacity: 0;
+    transform: translateY(0px);
+    transition: opacity .6s ease, transform 2.8s cubic-bezier(.16,1,.3,1);
+    text-shadow: 0 0 18px currentColor;
+    will-change: opacity, transform;
+    pointer-events: none;
+  }
+  .nf-whisper.visible  { opacity: .65; transform: translateY(-22px); }
+  .nf-whisper.fading   { opacity: 0;   transform: translateY(-38px); }
+
+  @media (prefers-reduced-motion: reduce) {
+    #neural-canvas,
+    #neural-whisper-pool { display: none !important; }
+  }
+</style>
+
+<script>
+;(function () {
+  if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return
+
+  const canvas     = document.getElementById('neural-canvas') as HTMLCanvasElement | null
+  const whisperPool = document.getElementById('neural-whisper-pool') as HTMLElement | null
+  if (!canvas) return
+  const ctx = canvas.getContext('2d')
+  if (!ctx) return
+
+  // ── Palette ────────────────────────────────────────────────────────────
+  const PAL_RGBA = [
+    [0,   175, 255],   // 0 electric blue
+    [77,  255, 255],   // 1 cyan
+    [255,  79, 216],   // 2 magenta
+    [168, 124, 255],   // 3 violet
+    [77,  255, 180],   // 4 teal accent
+  ] as [number,number,number][]
+
+  function rgb(ci: number, a: number) {
+    const [r,g,b] = PAL_RGBA[((ci % PAL_RGBA.length) + PAL_RGBA.length) % PAL_RGBA.length]
+    return `rgba(${r},${g},${b},${Math.max(0, Math.min(1, a)).toFixed(3)})`
+  }
+
+  // ── Whispers ───────────────────────────────────────────────────────────
+  const WHISPERS = [
+    'a pattern forms',      'your intent clarifies',  'the next step glows',
+    'signals converge',     'the lattice listens',    'a possibility crystallizes',
+    'alignment achieved',   'the horizon brightens',  'the network stirs',
+    'something stirs ahead','connections deepen',     'a frequency resonates',
+    'the field responds',   'intent received',        'a node awakens',
+    'pathways illuminate',  'the signal is clear',    'curiosity ignites',
+    'the mind expands',     'resonance detected',     'a thought takes shape',
+    'the cosmos listens',   'emergence begins',       'the lattice prepares',
+  ]
+  const WHISPER_COLORS = ['#4DFFFF','#A87CFF','#FF4FD8','#4DFFB4','#00AFFF']
+  let lastWhisperAt = 0
+
+  function spawnWhisper(x: number, y: number) {
+    if (!whisperPool) return
+    const now = Date.now()
+    if (now - lastWhisperAt < 4000) return
+    lastWhisperAt = now
+    const msg   = WHISPERS[Math.floor(Math.random() * WHISPERS.length)]
+    const color = WHISPER_COLORS[Math.floor(Math.random() * WHISPER_COLORS.length)]
+    const el    = document.createElement('div')
+    el.className = 'nf-whisper'
+    el.textContent = msg
+    el.style.color = color
+    const ox = Math.random() > .5 ? 20 : -90
+    el.style.left = Math.min(window.innerWidth - 200, Math.max(8, x + ox)) + 'px'
+    el.style.top  = Math.max(16, y - 14) + 'px'
+    whisperPool.appendChild(el)
+    requestAnimationFrame(() => {
+      el.classList.add('visible')
+      setTimeout(() => {
+        el.classList.add('fading')
+        setTimeout(() => el.remove(), 950)
+      }, 2800)
+    })
+  }
+
+  function maybeWhisper(x: number, y: number,
+    trigger: 'hover'|'pause'|'scroll'|'reveal'|'click'|'idle'|'wave') {
+    const p = trigger==='hover' ? .18 : trigger==='scroll' ? .07
+            : trigger==='pause' ? .50 : trigger==='reveal'  ? .55
+            : trigger==='click' ? .38 : trigger==='idle'    ? .80 : .30
+    if (Math.random() < p) spawnWhisper(x, y)
+  }
+
+  // ── Types ──────────────────────────────────────────────────────────────
+  interface NNode {
+    x: number; y: number; ox: number; oy: number
+    vx: number; vy: number; r: number; targetR: number
+    brightness: number; phase: number; speed: number
+    ci: number; active: boolean; shockVx: number; shockVy: number
+  }
+  interface Pulse       { fi: number; ti: number; t: number; speed: number; ci: number; radius: number; alpha: number }
+  interface Spark       { x: number; y: number; vx: number; vy: number; alpha: number; decay: number; r: number; ci: number }
+  interface Ripple      { x: number; y: number; r: number; maxR: number; alpha: number; ci: number; lineW: number }
+  interface Lightning   { pts: {x:number,y:number}[]; alpha: number; ci: number; lineW: number }
+  interface CometPt     { x: number; y: number; t: number }
+  interface DrawTendril { pts: {x:number,y:number}[]; alpha: number; ci: number }
+  interface ColorWave   { x: number; y: number; r: number; maxR: number; alpha: number; ci: number }
+
+  let nodes:        NNode[]       = []
+  let pulses:       Pulse[]       = []
+  let sparks:       Spark[]       = []
+  let ripples:      Ripple[]      = []
+  let lightnings:   Lightning[]   = []
+  let drawTendrils: DrawTendril[] = []
+  let colorWaves:   ColorWave[]   = []
+
+  const COMET_LEN = 30
+  const cometTrail: CometPt[] = []
+
+  let W = 0, H = 0, dpr = 1, time = 0
+  let mx = -9999, my = -9999, prevMx = -9999, prevMy = -9999
+  let isDrawing = false, activeTendril: DrawTendril | null = null
+  let prevScroll  = window.scrollY
+  let scrollVel   = 0
+  let lastMoveAt  = Date.now()
+  let idleMode    = false
+  let exciteLevel = 0    // 0–1
+
+  // ── Config ─────────────────────────────────────────────────────────────
+  const CONNECT_DIST  = 178
+  const NODE_AREA     = 23000
+  const MAX_NODES     = 96
+  const ATTRACT_DIST  = 172
+  const ATTRACT_FORCE = 0.030
+  const MAGNIFY_DIST  = 85
+  const PULSE_MIN     = 0.006
+  const PULSE_MAX     = 0.022
+
+  // ── Node factory ───────────────────────────────────────────────────────
+  function makeNode(): NNode {
+    const x = Math.random() * W, y = Math.random() * H
+    const r = Math.random() * 1.5 + 1.0
+    return { x, y, ox: x, oy: y, vx: 0, vy: 0, r, targetR: r,
+      brightness: Math.random() * .42 + .28,
+      phase: Math.random() * Math.PI * 2,
+      speed: Math.random() * .009 + .004,
+      ci: Math.floor(Math.random() * PAL_RGBA.length),
+      active: false, shockVx: 0, shockVy: 0 }
+  }
+
+  // ── Resize ─────────────────────────────────────────────────────────────
+  function resize() {
+    dpr = Math.min(window.devicePixelRatio || 1, 2)
+    W = window.innerWidth; H = window.innerHeight
+    canvas!.width = W * dpr; canvas!.height = H * dpr
+    canvas!.style.width = W + 'px'; canvas!.style.height = H + 'px'
+    ctx!.setTransform(dpr, 0, 0, dpr, 0, 0)
+    buildNodes()
+  }
+
+  function buildNodes() {
+    const count = Math.min(Math.floor(W * H / NODE_AREA), MAX_NODES)
+    nodes = Array.from({ length: count }, makeNode)
+    pulses = []; sparks = []; ripples = []; lightnings = []; colorWaves = []
+    for (let i = 0; i < 9; i++) seedPulse({})
+  }
+
+  // ── Pulse ──────────────────────────────────────────────────────────────
+  function seedPulse({ ci, alpha, fromNode }:
+    { ci?: number; alpha?: number; fromNode?: number } = {}) {
+    if (nodes.length < 2) return
+    const fi = fromNode !== undefined ? fromNode : Math.floor(Math.random() * nodes.length)
+    const from = nodes[fi]; if (!from) return
+    const neighbors: number[] = []
+    for (let i = 0; i < nodes.length; i++) {
+      if (i === fi) continue
+      const dx = nodes[i].x - from.x, dy = nodes[i].y - from.y
+      if (dx*dx + dy*dy < CONNECT_DIST * CONNECT_DIST) neighbors.push(i)
+    }
+    if (!neighbors.length) return
+    const ti = neighbors[Math.floor(Math.random() * neighbors.length)]
+    pulses.push({ fi, ti, t: 0,
+      speed: PULSE_MIN + Math.random() * (PULSE_MAX - PULSE_MIN) * (1 + exciteLevel * .6),
+      ci: ci !== undefined ? ci : Math.floor(Math.random() * PAL_RGBA.length),
+      radius: Math.random() * 3.0 + 1.4,
+      alpha:  alpha !== undefined ? alpha : .85 })
+  }
+
+  // ── Lightning fork ────────────────────────────────────────────────────
+  function spawnLightning(sx: number, sy: number, ci: number, depth = 0, alpha = .92) {
+    if (depth > 3) return
+    const branches = depth === 0 ? 5 : 2
+    for (let b = 0; b < branches; b++) {
+      const angle  = Math.random() * Math.PI * 2
+      const length = 45 + Math.random() * 85 * (1 - depth * .2)
+      const segs   = 4 + Math.floor(Math.random() * 5)
+      const pts: {x:number,y:number}[] = [{ x: sx, y: sy }]
+      let cx = sx, cy = sy
+      for (let s = 0; s < segs; s++) {
+        const jitter = 20 - depth * 4
+        cx += Math.cos(angle) * (length / segs) + (Math.random() - .5) * jitter
+        cy += Math.sin(angle) * (length / segs) + (Math.random() - .5) * jitter
+        pts.push({ x: cx, y: cy })
+      }
+      lightnings.push({ pts, alpha, ci, lineW: Math.max(.4, 1.3 - depth * .28) })
+      if (Math.random() < .55)
+        spawnLightning(cx, cy, (ci + 1) % PAL_RGBA.length, depth + 1, alpha * .58)
+    }
+  }
+
+  // ── Sparks ────────────────────────────────────────────────────────────
+  function spawnSparks(x: number, y: number, count: number, ci: number, spd = 2.5) {
+    for (let i = 0; i < count; i++) {
+      const angle = (Math.PI * 2 * i / count) + Math.random() * .7
+      const s = Math.random() * spd + .6
+      sparks.push({ x, y, vx: Math.cos(angle)*s, vy: Math.sin(angle)*s,
+        alpha: .95, decay: Math.random()*.038+.024, r: Math.random()*2.3+.8, ci })
+    }
+  }
+
+  // ── Ripples ───────────────────────────────────────────────────────────
+  function spawnRipple(x: number, y: number, ci: number, maxR = 120, lineW = 1.5) {
+    ripples.push({ x, y, r: 0, maxR, alpha: .72, ci, lineW })
+  }
+
+  // ── Shockwave ─────────────────────────────────────────────────────────
+  function shockwave(x: number, y: number, force = 6.5) {
+    for (const n of nodes) {
+      const dx = n.x - x, dy = n.y - y
+      const d  = Math.sqrt(dx*dx + dy*dy)
+      if (d < 220 && d > 0) {
+        const f = (1 - d / 220) * force
+        n.shockVx += (dx / d) * f
+        n.shockVy += (dy / d) * f
+      }
+    }
+  }
+
+  // ── Color wave ────────────────────────────────────────────────────────
+  function spawnColorWave(ci: number) {
+    const side = Math.floor(Math.random() * 4)
+    const x = side === 0 ? 0 : side === 1 ? W : Math.random() * W
+    const y = side === 2 ? 0 : side === 3 ? H : Math.random() * H
+    colorWaves.push({ x, y, r: 0, maxR: Math.hypot(W, H) * .95, alpha: .20, ci })
+  }
+
+  // ── UPDATE ────────────────────────────────────────────────────────────
+  function update() {
+    time++
+    const now = Date.now()
+    const curScroll = window.scrollY
+    scrollVel  = curScroll - prevScroll
+    prevScroll = curScroll
+
+    const msSinceMove = now - lastMoveAt
+    if (msSinceMove > 8000 && !idleMode) {
+      idleMode = true
+      maybeWhisper(mx < 0 ? W/2 : mx, my < 0 ? H/2 : my, 'idle')
+    }
+    if (msSinceMove < 400) idleMode = false
+
+    exciteLevel = Math.max(0, exciteLevel - .007)
+
+    const breath = Math.sin(time * .018) * .055  // global breathing
+
+    for (const n of nodes) {
+      n.vx += (n.ox - n.x) * .0038
+      n.vy += (n.oy - n.y) * .0038
+
+      const dxc = mx - n.x, dyc = my - n.y
+      const dc  = Math.sqrt(dxc*dxc + dyc*dyc)
+      if (dc < ATTRACT_DIST) {
+        const f = (1 - dc / ATTRACT_DIST) * ATTRACT_FORCE
+        n.vx += dxc * f; n.vy += dyc * f
+        n.active = true
+      } else {
+        n.active = false
+      }
+
+      if (Math.abs(scrollVel) > .5) n.vy += scrollVel * .013
+
+      n.vx += n.shockVx; n.vy += n.shockVy
+      n.shockVx *= .70;  n.shockVy *= .70
+
+      if (idleMode) {
+        n.vx += Math.sin(time * .011 + n.phase) * .045
+        n.vy += Math.cos(time * .010 + n.phase) * .040
+      }
+
+      n.vx *= .875; n.vy *= .875
+      n.x  += n.vx; n.y  += n.vy
+
+      n.brightness = .28 + Math.sin(time * n.speed + n.phase) * .17 + breath
+      if (n.active) n.brightness = Math.min(1, n.brightness + .44)
+
+      n.targetR = dc < MAGNIFY_DIST
+        ? n.r * (1 + (1 - dc / MAGNIFY_DIST) * 2.0)
+        : n.r
+    }
+
+    for (let i = pulses.length - 1; i >= 0; i--) {
+      const p = pulses[i]; p.t += p.speed
+      if (p.t >= 1) {
+        const cp = idleMode ? .32 : .64 + exciteLevel * .28
+        if (Math.random() < cp) seedPulse({ ci: p.ci, alpha: p.alpha * .84, fromNode: p.ti })
+        pulses.splice(i, 1)
+      }
+    }
+
+    for (let i = lightnings.length - 1; i >= 0; i--) {
+      lightnings[i].alpha -= .048
+      if (lightnings[i].alpha <= 0) lightnings.splice(i, 1)
+    }
+
+    for (let i = sparks.length - 1; i >= 0; i--) {
+      const s = sparks[i]
+      s.x += s.vx; s.y += s.vy; s.vy += .042; s.vx *= .97
+      s.alpha -= s.decay
+      if (s.alpha <= 0) sparks.splice(i, 1)
+    }
+
+    for (let i = ripples.length - 1; i >= 0; i--) {
+      const r = ripples[i]
+      r.r += 3.2 + (r.maxR / 120) * 1.4
+      r.alpha = .72 * (1 - r.r / r.maxR)
+      if (r.r >= r.maxR) ripples.splice(i, 1)
+    }
+
+    for (let i = drawTendrils.length - 1; i >= 0; i--) {
+      drawTendrils[i].alpha -= .0038
+      if (drawTendrils[i].alpha <= 0) drawTendrils.splice(i, 1)
+    }
+
+    for (let i = colorWaves.length - 1; i >= 0; i--) {
+      const w = colorWaves[i]
+      w.r += 5; w.alpha = .20 * (1 - w.r / w.maxR)
+      if (w.r >= w.maxR) colorWaves.splice(i, 1)
+    }
+
+    // Ambient spawning
+    const ar = idleMode ? 125 : exciteLevel > .5 ? 16 : 46
+    if (time % ar === 0) seedPulse({})
+    if (time % (ar * 1.7 | 0) === 0) seedPulse({ ci: 2, alpha: .52 })
+    if (time % (ar * 2.5 | 0) === 0) seedPulse({ ci: 3, alpha: .40 })
+
+    if (exciteLevel > .4 && time % 11 === 0) {
+      seedPulse({ ci: 0, alpha: .62 }); seedPulse({ ci: 1, alpha: .56 })
+    }
+
+    if (time % 330 === 0) spawnColorWave(Math.floor(Math.random() * 3 + 2))
+
+    if (Math.abs(scrollVel) > 3 && time % 8 === 0) {
+      seedPulse({ ci: 0, alpha: .58 }); seedPulse({ ci: 1, alpha: .50 })
+      exciteLevel = Math.min(1, exciteLevel + .22)
+      if (Math.abs(scrollVel) > 9) maybeWhisper(mx < 0 ? W*.5 : mx, H*.45, 'scroll')
+    }
+
+    if (time % 82 === 0) {
+      const active = nodes.filter(n => n.active)
+      const src = active.length ? active[Math.floor(Math.random()*active.length)]
+                                : nodes[Math.floor(Math.random()*nodes.length)]
+      if (src) spawnSparks(src.x, src.y, 3, 3, 1.5)
+    }
+
+    if (time % 6 === 0) {
+      const intensity = Math.min(1, pulses.length / 20 + exciteLevel * .4)
+      const root = document.documentElement
+      root.style.setProperty('--nf-pulse', intensity.toFixed(3))
+      root.style.setProperty('--nf-cx', (Math.max(0, mx) / W * 100).toFixed(1) + '%')
+      root.style.setProperty('--nf-cy', (Math.max(0, my) / H * 100).toFixed(1) + '%')
+    }
+  }
+
+  // ── DRAW ──────────────────────────────────────────────────────────────
+  function draw() {
+    ctx!.clearRect(0, 0, W, H)
+
+    // Color waves
+    for (const w of colorWaves) {
+      const grd = ctx!.createRadialGradient(w.x, w.y, 0, w.x, w.y, w.r)
+      grd.addColorStop(0,   rgb(w.ci, 0))
+      grd.addColorStop(.55, rgb(w.ci, w.alpha * .45))
+      grd.addColorStop(.88, rgb(w.ci, w.alpha))
+      grd.addColorStop(1,   rgb(w.ci, 0))
+      ctx!.beginPath(); ctx!.arc(w.x, w.y, w.r, 0, Math.PI * 2)
+      ctx!.fillStyle = grd; ctx!.globalAlpha = 1; ctx!.fill()
+    }
+
+    // Comet trail
+    if (cometTrail.length > 1) {
+      for (let i = 1; i < cometTrail.length; i++) {
+        const a = cometTrail[i-1], b = cometTrail[i]
+        const frac = i / cometTrail.length
+        ctx!.beginPath(); ctx!.moveTo(a.x, a.y); ctx!.lineTo(b.x, b.y)
+        ctx!.strokeStyle = rgb(1, frac * .52)
+        ctx!.lineWidth = frac * 2.8
+        ctx!.lineCap = 'round'; ctx!.globalAlpha = 1; ctx!.stroke()
+      }
+      const tip = cometTrail[cometTrail.length - 1]
+      const tGrd = ctx!.createRadialGradient(tip.x, tip.y, 0, tip.x, tip.y, 16)
+      tGrd.addColorStop(0, rgb(1, .6)); tGrd.addColorStop(1, rgb(1, 0))
+      ctx!.beginPath(); ctx!.arc(tip.x, tip.y, 16, 0, Math.PI * 2)
+      ctx!.fillStyle = tGrd; ctx!.globalAlpha = 1; ctx!.fill()
+    }
+
+    // Draw tendrils
+    for (const dt of drawTendrils) {
+      if (dt.pts.length < 2) continue
+      ctx!.beginPath(); ctx!.moveTo(dt.pts[0].x, dt.pts[0].y)
+      for (let i = 1; i < dt.pts.length; i++) ctx!.lineTo(dt.pts[i].x, dt.pts[i].y)
+      ctx!.strokeStyle = rgb(dt.ci, dt.alpha * .8)
+      ctx!.lineWidth = 1.8; ctx!.lineCap = 'round'; ctx!.lineJoin = 'round'
+      ctx!.shadowColor = rgb(dt.ci, .55); ctx!.shadowBlur = 10
+      ctx!.globalAlpha = 1; ctx!.stroke(); ctx!.shadowBlur = 0
+    }
+
+    // Tendrils (node connections)
+    for (let i = 0; i < nodes.length; i++) {
+      const a = nodes[i]
+      for (let j = i + 1; j < nodes.length; j++) {
+        const b = nodes[j]
+        const dx = b.x - a.x, dy = b.y - a.y
+        const d2 = dx*dx + dy*dy
+        if (d2 > CONNECT_DIST * CONNECT_DIST) continue
+        const alpha = (1 - Math.sqrt(d2) / CONNECT_DIST) * .22
+        const active = a.active || b.active
+        ctx!.beginPath(); ctx!.moveTo(a.x, a.y); ctx!.lineTo(b.x, b.y)
+        ctx!.strokeStyle = rgb(0, alpha * (active ? .65 : 1))
+        ctx!.lineWidth = active ? 1.1 : .5
+        ctx!.globalAlpha = 1; ctx!.stroke()
+      }
+    }
+
+    // Pulses
+    for (const p of pulses) {
+      const from = nodes[p.fi], to = nodes[p.ti]
+      if (!from || !to) continue
+      const x  = from.x + (to.x - from.x) * p.t
+      const y  = from.y + (to.y - from.y) * p.t
+      const tT = Math.max(0, p.t - .15)
+      const tX = from.x + (to.x - from.x) * tT
+      const tY = from.y + (to.y - from.y) * tT
+      const tGrd = ctx!.createLinearGradient(tX, tY, x, y)
+      tGrd.addColorStop(0, rgb(p.ci, 0))
+      tGrd.addColorStop(1, rgb(p.ci, p.alpha * .62))
+      ctx!.beginPath(); ctx!.moveTo(tX, tY); ctx!.lineTo(x, y)
+      ctx!.strokeStyle = tGrd; ctx!.lineWidth = p.radius * .85
+      ctx!.globalAlpha = 1; ctx!.stroke()
+      const hGrd = ctx!.createRadialGradient(x, y, 0, x, y, p.radius * 6.5)
+      hGrd.addColorStop(0,   rgb(p.ci, p.alpha))
+      hGrd.addColorStop(.38, rgb(p.ci, p.alpha * .42))
+      hGrd.addColorStop(1,   rgb(p.ci, 0))
+      ctx!.beginPath(); ctx!.arc(x, y, p.radius * 6.5, 0, Math.PI * 2)
+      ctx!.fillStyle = hGrd; ctx!.globalAlpha = 1; ctx!.fill()
+    }
+
+    // Nodes
+    for (const n of nodes) {
+      const dr = n.targetR
+      const hr = dr * (n.active ? 11 : 7)
+      const grd = ctx!.createRadialGradient(n.x, n.y, 0, n.x, n.y, hr)
+      grd.addColorStop(0,  rgb(n.ci, n.brightness * .78))
+      grd.addColorStop(.5, rgb(n.ci, n.brightness * .26))
+      grd.addColorStop(1,  rgb(n.ci, 0))
+      ctx!.beginPath(); ctx!.arc(n.x, n.y, hr, 0, Math.PI * 2)
+      ctx!.fillStyle = grd; ctx!.globalAlpha = 1; ctx!.fill()
+      ctx!.beginPath(); ctx!.arc(n.x, n.y, dr, 0, Math.PI * 2)
+      ctx!.fillStyle = rgb(n.ci, 1); ctx!.globalAlpha = n.brightness; ctx!.fill()
+    }
+    ctx!.globalAlpha = 1
+
+    // Lightning
+    for (const l of lightnings) {
+      if (l.pts.length < 2) continue
+      ctx!.beginPath(); ctx!.moveTo(l.pts[0].x, l.pts[0].y)
+      for (let i = 1; i < l.pts.length; i++) ctx!.lineTo(l.pts[i].x, l.pts[i].y)
+      ctx!.strokeStyle = rgb(l.ci, l.alpha)
+      ctx!.lineWidth = l.lineW; ctx!.lineCap = 'round'
+      ctx!.shadowColor = rgb(l.ci, .85); ctx!.shadowBlur = 12
+      ctx!.globalAlpha = 1; ctx!.stroke(); ctx!.shadowBlur = 0
+    }
+
+    // Sparks
+    for (const s of sparks) {
+      ctx!.beginPath(); ctx!.arc(s.x, s.y, s.r, 0, Math.PI * 2)
+      ctx!.fillStyle = rgb(s.ci, s.alpha); ctx!.globalAlpha = 1; ctx!.fill()
+    }
+
+    // Ripples — dual ring
+    for (const r of ripples) {
+      ctx!.beginPath(); ctx!.arc(r.x, r.y, r.r, 0, Math.PI * 2)
+      ctx!.strokeStyle = rgb(r.ci, r.alpha)
+      ctx!.lineWidth = r.lineW; ctx!.globalAlpha = 1; ctx!.stroke()
+      if (r.r > 22) {
+        ctx!.beginPath(); ctx!.arc(r.x, r.y, r.r * .55, 0, Math.PI * 2)
+        ctx!.strokeStyle = rgb((r.ci + 1) % PAL_RGBA.length, r.alpha * .38)
+        ctx!.lineWidth = r.lineW * .55; ctx!.stroke()
+      }
+    }
+    ctx!.globalAlpha = 1
+  }
+
+  // ── RAF loop ──────────────────────────────────────────────────────────
+  function loop() { update(); draw(); requestAnimationFrame(loop) }
+
+  // ── Events ────────────────────────────────────────────────────────────
+  let hoverTimer: ReturnType<typeof setTimeout> | null = null
+
+  window.addEventListener('mousemove', (e) => {
+    prevMx = mx; prevMy = my
+    mx = e.clientX; my = e.clientY
+    lastMoveAt = Date.now()
+    const now = performance.now()
+    cometTrail.push({ x: mx, y: my, t: now })
+    const cutoff = now - 110
+    while (cometTrail.length > COMET_LEN || (cometTrail.length && cometTrail[0].t < cutoff))
+      cometTrail.shift()
+    if (isDrawing && activeTendril) {
+      const last = activeTendril.pts[activeTendril.pts.length - 1]
+      const dx = mx - last.x, dy = my - last.y
+      if (dx*dx + dy*dy > 64) activeTendril.pts.push({ x: mx, y: my })
+    }
+    if (hoverTimer) clearTimeout(hoverTimer)
+    hoverTimer = setTimeout(() => {
+      if (mx !== prevMx || my !== prevMy) return
+      maybeWhisper(mx, my, 'pause')
+    }, 3200)
+  }, { passive: true })
+
+  // Click — bloom + lightning + shockwave + triple ripple
+  window.addEventListener('click', (e) => {
+    const x = e.clientX, y = e.clientY
+    spawnSparks(x, y, 14, 1, 3.4)
+    spawnSparks(x, y,  9, 2, 2.2)
+    spawnSparks(x, y,  6, 3, 1.5)
+    spawnRipple(x, y, 0,  90, 1.8)
+    setTimeout(() => spawnRipple(x, y, 1, 145, 1.2), 65)
+    setTimeout(() => spawnRipple(x, y, 3, 210, .75), 135)
+    spawnLightning(x, y, 1)
+    shockwave(x, y, 6.5)
+    for (let i = 0; i < 4; i++) seedPulse({ ci: i % PAL_RGBA.length, alpha: .92 - i*.14 })
+    exciteLevel = Math.min(1, exciteLevel + .38)
+    maybeWhisper(x, y, 'click')
+  }, { passive: true })
+
+  // Double-click — synapse superburst
+  window.addEventListener('dblclick', (e) => {
+    const x = e.clientX, y = e.clientY
+    spawnSparks(x, y, 26, 1, 5.0)
+    spawnSparks(x, y, 14, 2, 3.8)
+    spawnSparks(x, y,  9, 3, 2.6)
+    for (let i = 0; i < 3; i++)
+      setTimeout(() => spawnRipple(x, y, i, 290 + i*65, 1.3 - i*.22), i * 95)
+    spawnLightning(x, y, 1); spawnLightning(x, y, 2)
+    shockwave(x, y, 13); spawnColorWave(2)
+    for (let i = 0; i < 12; i++) seedPulse({ ci: i % PAL_RGBA.length, alpha: .96 })
+    exciteLevel = 1
+    spawnWhisper(x, y - 32)
+  }, { passive: true })
+
+  // Drag — draw glowing tendrils
+  window.addEventListener('mousedown', (e) => {
+    if (e.button !== 0) return
+    isDrawing = true
+    activeTendril = { pts: [{ x: e.clientX, y: e.clientY }],
+      alpha: .78, ci: Math.floor(Math.random() * PAL_RGBA.length) }
+    drawTendrils.push(activeTendril)
+  }, { passive: true })
+  window.addEventListener('mouseup',   () => { isDrawing = false; activeTendril = null }, { passive: true })
+
+  // Hover interactive elements
+  document.addEventListener('mouseover', (e) => {
+    const el = (e.target as Element).closest('button, a, [data-neural]')
+    if (!el) return
+    const rect = el.getBoundingClientRect()
+    const cx = rect.left + rect.width / 2, cy = rect.top + rect.height / 2
+    spawnSparks(cx, cy, 7, 3, 1.5)
+    spawnRipple(cx, cy, 3, 65, .9)
+    seedPulse({ ci: 3, alpha: .62 })
+    maybeWhisper(cx, cy - 30, 'hover')
+  }, { passive: true })
+
+  // Scroll excitement
+  window.addEventListener('scroll', () => {
+    const v = Math.abs(window.scrollY - prevScroll)
+    if (v > 10) {
+      exciteLevel = Math.min(1, exciteLevel + v * .016)
+      for (let i = 0; i < 3; i++) seedPulse({ ci: i, alpha: .72 })
+    }
+  }, { passive: true })
+
+  // Section prediction pre-lighting
+  const io = new IntersectionObserver((entries) => {
+    for (const entry of entries) {
+      if (!entry.isIntersecting) continue
+      for (let i = 0; i < 3; i++) seedPulse({ ci: i, alpha: .75 - i*.1 })
+      const rect = entry.target.getBoundingClientRect()
+      const midX = rect.left + rect.width / 2
+      const scY  = rect.top + window.scrollY
+      for (const n of nodes) {
+        if (Math.abs(n.ox - midX) < rect.width * .65 && Math.abs(n.oy - scY) < 280)
+          n.brightness = Math.min(1, n.brightness + .36)
+      }
+      maybeWhisper(midX, rect.top + 40, 'reveal')
+    }
+  }, { threshold: .05, rootMargin: '160px 0px 0px 0px' })
+  document.querySelectorAll('section, [data-section], .reveal, .neural-reveal').forEach(el => io.observe(el))
+
+  window.addEventListener('resize', resize)
+
+  // ── Init ──────────────────────────────────────────────────────────────
+  resize()
+  loop()
+  requestAnimationFrame(() => canvas!.classList.add('nf-ready'))
+})()
+</script>
