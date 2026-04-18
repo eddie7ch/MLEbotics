@@ -3,7 +3,6 @@ import '../styles/global.css'
 import ChatWidget from '@components/ChatWidget.astro'
 import CommandPalette from '@components/CommandPalette.astro'
 import NeuralField from '@components/NeuralField.astro'
-import { ViewTransitions } from 'astro:transitions'
 
 interface Props {
   title: string
@@ -91,9 +90,6 @@ const jsonLd = {
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Orbitron:wght@700&family=Space+Grotesk:wght@600;700&display=swap" />
     <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Orbitron:wght@700&family=Space+Grotesk:wght@600;700&display=swap" rel="stylesheet" />
-
-    <!-- View Transitions (smooth page navigation) -->
-    <ViewTransitions />
 
     <script is:inline>
       // Apply the queued transition direction before paint so route choreography stays consistent.
@@ -196,6 +192,51 @@ const jsonLd = {
 
     <!-- Scroll-reveal observer + scroll progress + back to top -->
     <script>
+      const NEURAL_PREF_KEY = 'mle-neural-bg'
+
+      function applyNeuralPreference(enabled) {
+        document.documentElement.setAttribute('data-neural-bg', enabled ? 'on' : 'off')
+        const toggle = document.getElementById('neural-toggle')
+        const text = toggle?.querySelector('.neural-toggle__text')
+        toggle?.setAttribute('aria-pressed', String(enabled))
+        toggle?.setAttribute('aria-label', enabled ? 'Turn neural background off' : 'Turn neural background on')
+        if (text) text.textContent = enabled ? 'Neural: On' : 'Neural: Off'
+      }
+
+      function initNeuralToggle() {
+        const toggle = document.getElementById('neural-toggle')
+        if (!toggle) return
+
+        let enabled = true
+        try {
+          enabled = localStorage.getItem(NEURAL_PREF_KEY) !== 'off'
+        } catch {
+          enabled = true
+        }
+
+        applyNeuralPreference(enabled)
+
+        const prevCleanup = window.__mleNeuralToggleCleanup
+        if (typeof prevCleanup === 'function') prevCleanup()
+
+        const controller = new AbortController()
+        const { signal } = controller
+        window.__mleNeuralToggleCleanup = () => controller.abort()
+
+        toggle.addEventListener('click', () => {
+          enabled = document.documentElement.getAttribute('data-neural-bg') !== 'on'
+          applyNeuralPreference(enabled)
+          try {
+            localStorage.setItem(NEURAL_PREF_KEY, enabled ? 'on' : 'off')
+          } catch {
+            // no-op
+          }
+        }, { signal })
+      }
+
+      initNeuralToggle()
+      document.addEventListener('astro:page-load', initNeuralToggle)
+
       const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches
       const saveData = !!(navigator.connection && navigator.connection.saveData)
       const lowPower = reducedMotion || saveData || (typeof navigator.hardwareConcurrency === 'number' && navigator.hardwareConcurrency <= 4)
@@ -332,10 +373,119 @@ const jsonLd = {
 
     <!-- Elite interaction primitives: hover intent, magnetic buttons, tactile ripple -->
     <script>
-      ;(function () {
+      function initEliteInteractions() {
         const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches
-        const canHover = window.matchMedia('(hover: hover)').matches
+        const canHover = window.matchMedia('(hover: hover)').matches || window.matchMedia('(any-hover: hover)').matches
+        const soundStorageKey = 'mle-interaction-sound'
+        const toggleBtn = document.getElementById('motion-sound-toggle')
+
+        function isSoundEnabled() {
+          try {
+            return localStorage.getItem(soundStorageKey) === 'on'
+          } catch {
+            return false
+          }
+        }
+
+        function setSoundEnabled(enabled) {
+          try {
+            localStorage.setItem(soundStorageKey, enabled ? 'on' : 'off')
+          } catch {
+            // no-op
+          }
+          if (toggleBtn) {
+            toggleBtn.setAttribute('aria-pressed', String(enabled))
+            toggleBtn.setAttribute('aria-label', enabled ? 'Disable interaction sound' : 'Enable interaction sound')
+            toggleBtn.setAttribute('title', enabled ? 'Sound On' : 'Sound Off')
+            toggleBtn.classList.toggle('is-on', enabled)
+          }
+        }
+
+        if (!window.__mleEliteSoundBound && toggleBtn) {
+          toggleBtn.addEventListener('click', () => {
+            const next = !isSoundEnabled()
+            setSoundEnabled(next)
+            if (next) {
+              try {
+                if (!window.__mleUiAudioCtx) {
+                  window.__mleUiAudioCtx = new (window.AudioContext || window.webkitAudioContext)()
+                }
+                window.__mleUiAudioCtx.resume?.()
+              } catch {
+                // no-op
+              }
+            }
+          })
+          window.__mleEliteSoundBound = true
+        }
+        setSoundEnabled(isSoundEnabled())
+
+        function playUiTone(kind) {
+          if (!isSoundEnabled()) return
+          if (reducedMotion) return
+          try {
+            if (!window.__mleUiAudioCtx) {
+              window.__mleUiAudioCtx = new (window.AudioContext || window.webkitAudioContext)()
+            }
+            const ctx = window.__mleUiAudioCtx
+            if (!ctx) return
+            if (ctx.state === 'suspended') ctx.resume?.()
+
+            const osc = ctx.createOscillator()
+            const gain = ctx.createGain()
+            const now = ctx.currentTime
+
+            const config = kind === 'hover'
+              ? { freq: 520, end: 620, dur: 0.035, vol: 0.016 }
+              : { freq: 420, end: 280, dur: 0.055, vol: 0.023 }
+
+            osc.type = 'sine'
+            osc.frequency.setValueAtTime(config.freq, now)
+            osc.frequency.exponentialRampToValueAtTime(config.end, now + config.dur)
+
+            gain.gain.setValueAtTime(0.0001, now)
+            gain.gain.exponentialRampToValueAtTime(config.vol, now + 0.008)
+            gain.gain.exponentialRampToValueAtTime(0.0001, now + config.dur)
+
+            osc.connect(gain)
+            gain.connect(ctx.destination)
+            osc.start(now)
+            osc.stop(now + config.dur)
+          } catch {
+            // no-op
+          }
+        }
+
+        const prevCleanup = window.__mleEliteCleanup
+        if (typeof prevCleanup === 'function') prevCleanup()
+
+        const controller = new AbortController()
+        const { signal } = controller
+        window.__mleEliteCleanup = () => controller.abort()
+
         if (reducedMotion) return
+
+        // Global interaction sound so all clickable controls feel responsive.
+        function getInteractiveTarget(eventTarget) {
+          if (!(eventTarget instanceof Element)) return null
+          const interactive = eventTarget.closest('button, a[href], [role="button"], input[type="button"], input[type="submit"], input[type="reset"], summary, [tabindex], [data-click-sound], .filter-tab, .project-switch-btn')
+          if (!(interactive instanceof HTMLElement)) return null
+          if (interactive.matches('[disabled], [aria-disabled="true"], [data-no-sound]')) return null
+          return interactive
+        }
+
+        document.addEventListener('pointerdown', (event) => {
+          const interactive = getInteractiveTarget(event.target)
+          if (!interactive) return
+          playUiTone('click')
+        }, { signal })
+
+        document.addEventListener('keydown', (event) => {
+          if (event.key !== 'Enter' && event.key !== ' ') return
+          const interactive = getInteractiveTarget(event.target)
+          if (!interactive) return
+          playUiTone('click')
+        }, { signal })
 
         // Soft spring button press + ripple feedback
         document.querySelectorAll('button, a.btn-primary, a.btn-outline').forEach((node) => {
@@ -350,27 +500,71 @@ const jsonLd = {
             ripple.style.top = `${e.clientY - rect.top}px`
             el.appendChild(ripple)
             setTimeout(() => ripple.remove(), 520)
-          })
-          el.addEventListener('pointerup', () => el.classList.remove('is-pressed'))
-          el.addEventListener('pointerleave', () => el.classList.remove('is-pressed'))
+          }, { signal })
+          el.addEventListener('pointerup', () => el.classList.remove('is-pressed'), { signal })
+          el.addEventListener('pointerleave', () => el.classList.remove('is-pressed'), { signal })
         })
 
-        if (!canHover) return
+        if (canHover) {
+          // Hover-intent magnetic drift for marked controls and CTA buttons inside cards.
+          const magneticTargets = document.querySelectorAll('[data-magnetic], .card .btn-primary, .card .btn-outline, .project .btn-primary, .project .btn-outline')
+          magneticTargets.forEach((node) => {
+            const el = node
+            el.addEventListener('mousemove', (e) => {
+              const rect = el.getBoundingClientRect()
+              const rawDx = (e.clientX - rect.left - rect.width / 2) * 0.065
+              const rawDy = (e.clientY - rect.top - rect.height / 2) * 0.065
+              const dx = Math.max(-8, Math.min(8, rawDx))
+              const dy = Math.max(-8, Math.min(8, rawDy))
+              el.style.transform = `translate3d(${dx}px, ${dy}px, 0)`
+            }, { signal })
+            el.addEventListener('mouseleave', () => {
+              el.style.transform = ''
+            }, { signal })
+            el.addEventListener('pointerenter', () => {
+              playUiTone('hover')
+            }, { signal })
+          })
+        }
 
-        // Hover-intent magnetic drift for explicitly marked controls.
-        document.querySelectorAll('[data-magnetic]').forEach((node) => {
+        // Card + chip wave response (pointer-follow glow + slight tilt).
+        const targets = document.querySelectorAll('.card, .project, .app-card, .post-card, .phase-card, .pillar-card, .waitlist-card, .community-card, [data-neural-card], .chip, [data-chip], .mini-box')
+        targets.forEach((node) => {
           const el = node
-          el.addEventListener('mousemove', (e) => {
+          el.classList.add('mle-wave-target')
+
+          el.addEventListener('pointerenter', () => {
+            el.classList.add('mle-wave-active')
+          }, { signal })
+
+          el.addEventListener('pointermove', (e) => {
             const rect = el.getBoundingClientRect()
-            const dx = (e.clientX - rect.left - rect.width / 2) * 0.14
-            const dy = (e.clientY - rect.top - rect.height / 2) * 0.14
-            el.style.transform = `translate3d(${dx}px, ${dy}px, 0)`
-          })
-          el.addEventListener('mouseleave', () => {
-            el.style.transform = ''
-          })
+            if (!rect.width || !rect.height) return
+
+            const px = (e.clientX - rect.left) / rect.width
+            const py = (e.clientY - rect.top) / rect.height
+            const rx = (0.5 - py) * 2.4
+            const ry = (px - 0.5) * 3.2
+
+            el.style.setProperty('--mle-wave-x', `${(px * 100).toFixed(2)}%`)
+            el.style.setProperty('--mle-wave-y', `${(py * 100).toFixed(2)}%`)
+            el.style.setProperty('--mle-wave-rx', `${rx.toFixed(2)}deg`)
+            el.style.setProperty('--mle-wave-ry', `${ry.toFixed(2)}deg`)
+            el.classList.add('mle-wave-active')
+          }, { signal })
+
+          el.addEventListener('pointerleave', () => {
+            el.classList.remove('mle-wave-active')
+            el.style.removeProperty('--mle-wave-rx')
+            el.style.removeProperty('--mle-wave-ry')
+            el.style.removeProperty('--mle-wave-x')
+            el.style.removeProperty('--mle-wave-y')
+          }, { signal })
         })
-      })()
+      }
+
+      initEliteInteractions()
+      document.addEventListener('astro:page-load', initEliteInteractions)
     </script>
 
     <!-- Toast notification system -->
@@ -839,6 +1033,47 @@ const jsonLd = {
     box-shadow: 0 0 28px rgba(0,175,255,.14), 0 0 60px rgba(77,255,255,.05);
   }
 
+  .mle-wave-target {
+    position: relative;
+    overflow: hidden;
+    transform-style: preserve-3d;
+    transition: transform .22s cubic-bezier(.22,1,.36,1), box-shadow .35s ease;
+    will-change: transform;
+    --mle-wave-x: 50%;
+    --mle-wave-y: 50%;
+    --mle-wave-rx: 0deg;
+    --mle-wave-ry: 0deg;
+  }
+  .mle-wave-target::after {
+    content: '';
+    position: absolute;
+    inset: -40%;
+    pointer-events: none;
+    background:
+      radial-gradient(240px circle at var(--mle-wave-x) var(--mle-wave-y), rgba(120, 218, 255, .32), transparent 68%),
+      radial-gradient(170px circle at var(--mle-wave-x) var(--mle-wave-y), rgba(157, 242, 202, .20), transparent 62%);
+    opacity: 0;
+    transform: translateZ(0);
+    transition: opacity .2s ease;
+  }
+  .mle-wave-target.mle-wave-active {
+    transform: perspective(980px) rotateX(var(--mle-wave-rx)) rotateY(var(--mle-wave-ry)) translateY(-1px) scale(1.004);
+    box-shadow: 0 10px 28px rgba(0, 0, 0, .2), 0 0 20px rgba(0, 212, 255, .1);
+  }
+  .mle-wave-target.mle-wave-active::after {
+    opacity: 1;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .mle-wave-target,
+    .mle-wave-target.mle-wave-active {
+      transform: none !important;
+    }
+    .mle-wave-target::after {
+      display: none;
+    }
+  }
+
   /* Neural reveal: content appears as foreseen (silhouette → clarity) */
   .neural-reveal {
     opacity: 0;
@@ -925,6 +1160,7 @@ const jsonLd = {
     border-color: var(--cyan);
     color: var(--cyan);
   }
+
 
   /* ── Toast notifications ───────────────────────────────── */
   #toast-container {

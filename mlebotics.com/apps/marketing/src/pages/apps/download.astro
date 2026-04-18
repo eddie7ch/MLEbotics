@@ -6,7 +6,22 @@ import '../../styles/global.css'
 
 const apps = [
   {
+    name: 'ChromaShift',
+    slug: 'chromashift',
+    icon: '/favicon.svg',
+    tagline: 'System-wide color accessibility overlay for colorblind users',
+    description: 'Applies real-time color correction across your entire Windows screen — every app, browser, game, and video. Supports all 8 types of color vision deficiency including Deuteranopia, Protanopia, and Tritanopia. No per-app setup. Instant toggle with a hotkey. Also available as a web-only browser version (current tab/browser only).',
+    platforms: ['Windows'],
+    downloadLinks: [
+      { label: '⬇ Download .exe (Windows)', url: 'https://github.com/MLEbotics/MLEbotics/releases/download/chromashift-v1.0.0/ChromaShift.exe', primary: true },
+      { label: 'Open Web-Only Version', url: '/apps/chromashift-browser', primary: false },
+      { label: 'View Release', url: 'https://github.com/MLEbotics/MLEbotics/releases/tag/chromashift-v1.0.0', primary: false },
+    ],
+    stack: ['Python', 'PyInstaller', 'Windows Magnification API', 'CustomTkinter'],
+  },
+  {
     name: 'RunCompanion',
+    slug: 'runcompanion',
     icon: '🏃',
     tagline: 'AI running coach — Android, iOS & Windows',
     description: 'Cross-platform Flutter app. Plans training sessions, monitors pace and heart-rate zones, and syncs with robotics hardware via Bluetooth. Available on Android, iOS, and Windows.',
@@ -20,6 +35,7 @@ const apps = [
   },
   {
     name: 'MLEbotics Hub',
+    slug: 'mlebotics-hub',
     icon: '🚀',
     tagline: 'Unified launcher for all MLEbotics tools',
     description: 'Single Windows EXE that launches and monitors all MLEbotics local agents and services. Built with PyInstaller — no Python install needed. Includes Hey Girl, Computer Use, and AutoFormFiller.',
@@ -32,6 +48,7 @@ const apps = [
   },
   {
     name: 'AutoFormFiller',
+    slug: 'autoformfiller',
     icon: '📝',
     tagline: 'AI-powered Chrome extension for auto-filling forms',
     description: 'Chrome extension + Python backend. Reads any web form and fills it automatically using AI — ideal for job applications and event registrations. Load the extension from the downloaded zip.',
@@ -44,6 +61,7 @@ const apps = [
   },
   {
     name: 'Hey Girl',
+    slug: 'hey-girl',
     icon: '🎙️',
     tagline: 'Voice & text AI assistant for Windows',
     description: 'Wake-word activated AI assistant. Handles tasks, reads and summarizes assignments, solves quizzes, and answers questions with full conversation memory and Telegram integration. Requires Python and an OpenAI API key.',
@@ -56,6 +74,7 @@ const apps = [
   },
   {
     name: 'Computer Use Agent',
+    slug: 'computer-use-agent',
     icon: '🤖',
     tagline: 'AI desktop agent that sees and controls your screen',
     description: 'Anthropic Claude-powered agent. Takes screenshots of your desktop and performs tasks like a human — clicking, typing, navigating, and chaining actions automatically. Requires Python and an Anthropic API key.',
@@ -68,6 +87,7 @@ const apps = [
   },
   {
     name: 'Textual Data Processing',
+    slug: 'textual-data-processing',
     icon: '📄',
     tagline: 'Console app for analysing text statistics',
     description: 'Enter any paragraph and get instant stats: vowel count, word count, word frequency, and compound word handling. Self-contained Windows .exe — no .NET install required.',
@@ -100,9 +120,13 @@ const platformColors: Record<string, string> = {
 
         <div class="apps-grid">
           {apps.map(app => (
-            <div class="app-card">
+            <div class="app-card" id={app.slug}>
               <div class="app-card__header">
-                <span class="app-card__icon" aria-hidden="true">{app.icon}</span>
+                {String(app.icon).startsWith('/') ? (
+                  <img src={app.icon} alt={`${app.name} icon`} class="app-card__icon-image" />
+                ) : (
+                  <span class="app-card__icon" aria-hidden="true">{app.icon}</span>
+                )}
                 <div class="platform-badges">
                   {app.platforms.map(p => (
                     <span class="platform-badge" style={`color: ${platformColors[p] ?? '#aaa'}; border-color: ${platformColors[p] ?? '#aaa'}33`}>{p}</span>
@@ -163,6 +187,13 @@ const platformColors: Record<string, string> = {
     font-size: 2rem;
     line-height: 1;
     flex-shrink: 0;
+  }
+  .app-card__icon-image {
+    width: 40px;
+    height: 40px;
+    object-fit: contain;
+    flex-shrink: 0;
+    display: block;
   }
   .platform-badges {
     display: flex;

@@ -64,6 +64,35 @@ const current = Astro.url.pathname
     </nav>
 
     <div class="header__actions">
+      <button
+        id="neural-toggle"
+        class="header-neural-toggle"
+        type="button"
+        aria-pressed="true"
+        aria-label="Turn neural background off"
+        title="Toggle neural background"
+      >
+        <span class="neural-toggle__dot" aria-hidden="true"></span>
+        <span class="neural-toggle__text">Neural: On</span>
+      </button>
+
+      <button
+        id="motion-sound-toggle"
+        class="header-sound-toggle"
+        type="button"
+        aria-pressed="false"
+        aria-label="Enable interaction sound"
+        title="Toggle interaction sound"
+        data-no-neural
+      >
+        <svg class="header-sound-toggle__icon" xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
+          <path d="M19.07 4.93a10 10 0 0 1 0 14.14"></path>
+          <path d="M15.54 8.46a5 5 0 0 1 0 7.07"></path>
+          <line class="header-sound-toggle__mute-line" x1="4" y1="20" x2="20" y2="4"></line>
+        </svg>
+      </button>
+
       <button class="header-search-btn" id="header-search-btn" aria-label="Search (Ctrl+K)" title="Search (Ctrl+K)">
         <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
         <span class="header-search-btn__label">Search</span>
@@ -117,88 +146,122 @@ const current = Astro.url.pathname
 <div class="mobile-menu__backdrop" id="mobile-backdrop"></div>
 
 <script>
-  const siteHeader = document.getElementById('site-header')
-  const appsBtn = document.getElementById('apps-btn')
-  const appsMenu = document.getElementById('apps-menu')
-  const hamburger = document.getElementById('hamburger-btn')
-  const mobileMenu = document.getElementById('mobile-menu')
-  const mobileBackdrop = document.getElementById('mobile-backdrop')
-  const mobileCloseBtn = document.getElementById('mobile-close-btn')
+  function initHeaderUi() {
+    const siteHeader = document.getElementById('site-header')
+    const appsBtn = document.getElementById('apps-btn')
+    const appsMenu = document.getElementById('apps-menu')
+    const hamburger = document.getElementById('hamburger-btn')
+    const mobileMenu = document.getElementById('mobile-menu')
+    const mobileBackdrop = document.getElementById('mobile-backdrop')
+    const mobileCloseBtn = document.getElementById('mobile-close-btn')
+    const headerSearchBtn = document.getElementById('header-search-btn')
+    const dropdownItems = document.querySelectorAll('.dropdown__item')
+    const mobileNavLinks = document.querySelectorAll('.mobile-nav__link, .mobile-menu__cta')
+    const announceBar = document.getElementById('announce-bar')
+    const announceClose = document.getElementById('announce-close')
 
-  let lastY = window.scrollY
+    // Clean up listeners when Astro swaps pages to avoid stale or duplicated handlers.
+    const prevCleanup = window.__mleHeaderCleanup
+    if (typeof prevCleanup === 'function') prevCleanup()
+    const controller = new AbortController()
+    const { signal } = controller
+    window.__mleHeaderCleanup = () => controller.abort()
 
-  function onHeaderScroll() {
-    if (!siteHeader) return
-    const y = window.scrollY
-    siteHeader.classList.toggle('header--scrolled', y > 16)
+    let lastY = window.scrollY
 
-    const mobileOpen = mobileMenu?.classList.contains('open')
-    if (!mobileOpen && y > lastY && y > 180) {
-      siteHeader.classList.add('header--hidden')
-    } else {
-      siteHeader.classList.remove('header--hidden')
+    function onHeaderScroll() {
+      if (!siteHeader) return
+      const y = window.scrollY
+      siteHeader.classList.toggle('header--scrolled', y > 16)
+
+      const mobileOpen = mobileMenu?.classList.contains('open')
+      if (!mobileOpen && y > lastY && y > 180) {
+        siteHeader.classList.add('header--hidden')
+      } else {
+        siteHeader.classList.remove('header--hidden')
+      }
+      lastY = y
     }
-    lastY = y
+
+    function closeAppsMenu() {
+      appsMenu?.classList.remove('open')
+      appsBtn?.setAttribute('aria-expanded', 'false')
+    }
+
+    function openMenu() {
+      mobileMenu?.classList.add('open')
+      mobileBackdrop?.classList.add('open')
+      hamburger?.setAttribute('aria-expanded', 'true')
+      hamburger?.classList.add('active')
+      mobileMenu?.removeAttribute('aria-hidden')
+      document.body.style.overflow = 'hidden'
+      siteHeader?.classList.remove('header--hidden')
+    }
+
+    function closeMenu() {
+      mobileMenu?.classList.remove('open')
+      mobileBackdrop?.classList.remove('open')
+      hamburger?.setAttribute('aria-expanded', 'false')
+      hamburger?.classList.remove('active')
+      mobileMenu?.setAttribute('aria-hidden', 'true')
+      document.body.style.overflow = ''
+    }
+
+    function resetTransientState() {
+      closeAppsMenu()
+      closeMenu()
+      document.body.style.overflow = ''
+    }
+
+    resetTransientState()
+    onHeaderScroll()
+
+    window.addEventListener('scroll', onHeaderScroll, { passive: true, signal })
+
+    appsBtn?.addEventListener('click', (e) => {
+      e.stopPropagation()
+      const open = appsMenu?.classList.toggle('open')
+      appsBtn.setAttribute('aria-expanded', String(open))
+    }, { signal })
+
+    document.addEventListener('click', () => closeAppsMenu(), { signal })
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') {
+        closeAppsMenu()
+        closeMenu()
+      }
+    }, { signal })
+
+    headerSearchBtn?.addEventListener('click', () => {
+      if (typeof window.__cmdOpen === 'function') window.__cmdOpen()
+    }, { signal })
+
+    hamburger?.addEventListener('click', openMenu, { signal })
+    mobileCloseBtn?.addEventListener('click', closeMenu, { signal })
+    mobileBackdrop?.addEventListener('click', closeMenu, { signal })
+
+    dropdownItems.forEach((item) => {
+      item.addEventListener('click', () => {
+        closeAppsMenu()
+      }, { signal })
+    })
+
+    mobileNavLinks.forEach((link) => {
+      link.addEventListener('click', () => {
+        closeMenu()
+      }, { signal })
+    })
+
+    if (sessionStorage.getItem('announce-dismissed')) announceBar?.remove()
+    announceClose?.addEventListener('click', () => {
+      announceBar?.classList.add('announce-bar--hidden')
+      setTimeout(() => announceBar?.remove(), 280)
+      sessionStorage.setItem('announce-dismissed', '1')
+    }, { signal })
   }
 
-  window.addEventListener('scroll', onHeaderScroll, { passive: true })
-  onHeaderScroll()
-
-  function closeAppsMenu() {
-    appsMenu?.classList.remove('open')
-    appsBtn?.setAttribute('aria-expanded', 'false')
-  }
-
-  appsBtn?.addEventListener('click', (e) => {
-    e.stopPropagation()
-    const open = appsMenu?.classList.toggle('open')
-    appsBtn.setAttribute('aria-expanded', String(open))
-  })
-
-  document.addEventListener('click', () => closeAppsMenu())
-  document.addEventListener('keydown', (e) => {
-    if (e.key === 'Escape') closeAppsMenu()
-  })
-
-  document.getElementById('header-search-btn')?.addEventListener('click', () => {
-    if (typeof window.__cmdOpen === 'function') window.__cmdOpen()
-  })
-
-  function openMenu() {
-    mobileMenu?.classList.add('open')
-    mobileBackdrop?.classList.add('open')
-    hamburger?.setAttribute('aria-expanded', 'true')
-    hamburger?.classList.add('active')
-    mobileMenu?.removeAttribute('aria-hidden')
-    document.body.style.overflow = 'hidden'
-    siteHeader?.classList.remove('header--hidden')
-  }
-
-  function closeMenu() {
-    mobileMenu?.classList.remove('open')
-    mobileBackdrop?.classList.remove('open')
-    hamburger?.setAttribute('aria-expanded', 'false')
-    hamburger?.classList.remove('active')
-    mobileMenu?.setAttribute('aria-hidden', 'true')
-    document.body.style.overflow = ''
-  }
-
-  hamburger?.addEventListener('click', openMenu)
-  mobileCloseBtn?.addEventListener('click', closeMenu)
-  mobileBackdrop?.addEventListener('click', closeMenu)
-  document.addEventListener('keydown', (e) => {
-    if (e.key === 'Escape') closeMenu()
-  })
-
-  const announceBar = document.getElementById('announce-bar')
-  const announceClose = document.getElementById('announce-close')
-
-  if (sessionStorage.getItem('announce-dismissed')) announceBar?.remove()
-  announceClose?.addEventListener('click', () => {
-    announceBar?.classList.add('announce-bar--hidden')
-    setTimeout(() => announceBar?.remove(), 280)
-    sessionStorage.setItem('announce-dismissed', '1')
-  })
+  initHeaderUi()
+  document.addEventListener('astro:page-load', initHeaderUi)
 </script>
 
 <style>
@@ -292,6 +355,79 @@ const current = Astro.url.pathname
     align-items: center;
     gap: .55rem;
     flex-shrink: 0;
+  }
+
+  .header-sound-toggle {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    border-radius: 12px;
+    border: 1px solid rgba(125, 145, 182, .24);
+    background: rgba(13, 17, 23, .8);
+    color: #8ea7c8;
+    cursor: pointer;
+    transition: border-color .18s ease, color .18s ease, background .18s ease, transform .18s ease;
+    backdrop-filter: blur(8px);
+  }
+  .header-sound-toggle:hover {
+    border-color: rgba(116, 209, 255, .45);
+    color: #d9e8ff;
+    transform: translateY(-1px);
+  }
+  .header-sound-toggle.is-on {
+    border-color: rgba(125, 243, 190, .42);
+    color: #b5ffd7;
+    background: rgba(17, 34, 31, .88);
+  }
+  .header-sound-toggle__icon {
+    display: block;
+  }
+  .header-sound-toggle__mute-line {
+    opacity: .9;
+    transition: opacity .18s ease;
+  }
+  .header-sound-toggle.is-on .header-sound-toggle__mute-line {
+    opacity: 0;
+  }
+
+  .header-neural-toggle {
+    display: inline-flex;
+    align-items: center;
+    gap: .5rem;
+    min-height: 36px;
+    padding: .34rem .64rem;
+    border-radius: 10px;
+    border: 1px solid rgba(124, 145, 182, .16);
+    background: rgba(255,255,255,.03);
+    color: rgba(203, 213, 225, .72);
+    font-family: inherit;
+    font-size: .72rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: border-color .15s, color .15s, background .15s, opacity .15s;
+    flex-shrink: 0;
+    white-space: nowrap;
+    opacity: .78;
+  }
+  .header-neural-toggle:hover {
+    border-color: rgba(124, 145, 182, .28);
+    color: #fff;
+    background: rgba(255,255,255,.05);
+    opacity: 1;
+  }
+  .neural-toggle__dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: #4ade80;
+    box-shadow: 0 0 10px rgba(74, 222, 128, .8);
+    flex-shrink: 0;
+  }
+  html[data-neural-bg='off'] .neural-toggle__dot {
+    background: #64748b;
+    box-shadow: none;
   }
 
   .btn--sm { padding: .45rem .95rem; font-size: .76rem; }

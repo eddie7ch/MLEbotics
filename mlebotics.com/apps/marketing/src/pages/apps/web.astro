@@ -6,6 +6,15 @@ import '../../styles/global.css'
 
 const apps = [
   {
+    name: 'ChromaShift Browser',
+    icon: '/favicon.svg',
+    tagline: 'Browser-only color accessibility filter',
+    description: 'Instant tab-level color filter inspired by ChromaShift. Choose a vision profile and intensity, then apply it to your current browser view. No download required.',
+    url: '/apps/chromashift-browser',
+    stack: ['Astro', 'TypeScript', 'CSS Filters'],
+    status: 'live',
+  },
+  {
     name: 'RunCompanion',
     icon: '🏃',
     tagline: 'AI-powered running coach & tracker',
@@ -85,7 +94,11 @@ const apps = [
           {apps.map(app => (
             <a href={app.url} class="app-card" target="_blank" rel="noopener noreferrer">
               <div class="app-card__header">
-                <span class="app-card__icon" aria-hidden="true">{app.icon}</span>
+                {String(app.icon).startsWith('/') ? (
+                  <img src={app.icon} alt={`${app.name} icon`} class="app-card__icon-image" />
+                ) : (
+                  <span class="app-card__icon" aria-hidden="true">{app.icon}</span>
+                )}
                 <span class="badge badge--live">Live</span>
               </div>
               <h2 class="app-card__name">{app.name}</h2>
@@ -140,6 +153,12 @@ const apps = [
   .app-card__icon {
     font-size: 2rem;
     line-height: 1;
+  }
+  .app-card__icon-image {
+    width: 40px;
+    height: 40px;
+    object-fit: contain;
+    display: block;
   }
   .badge--live {
     font-size: .7rem;

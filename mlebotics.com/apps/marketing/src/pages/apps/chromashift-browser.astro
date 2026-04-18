@@ -1,0 +1,285 @@
+---
+import Layout from '@layouts/Layout.astro'
+import Header from '@components/Header.astro'
+import Footer from '@components/Footer.astro'
+import '../../styles/global.css'
+---
+
+<Layout title="ChromaShift Browser" description="Browser-only ChromaShift filter. Apply color accessibility profiles to your current tab without downloading desktop software.">
+  <Header />
+
+  <main>
+    <section class="section">
+      <div class="container">
+        <p class="tag">ChromaShift Browser</p>
+        <h1 class="section__h2">Browser-only color filter</h1>
+        <p class="page-sub">No install. This version runs only in the current browser tab.</p>
+
+        <div class="panel">
+          <div class="controls">
+            <label class="field">
+              <span>Profile</span>
+              <select id="profile" class="input">
+                <option value="normal">Normal</option>
+                <option value="deuteranopia">Deuteranopia</option>
+                <option value="protanopia">Protanopia</option>
+                <option value="tritanopia">Tritanopia</option>
+                <option value="achromatopsia">Achromatopsia</option>
+              </select>
+            </label>
+
+            <label class="field">
+              <span>Intensity <strong id="intensityValue">70%</strong></span>
+              <input id="intensity" class="range" type="range" min="0" max="100" value="70" />
+            </label>
+
+            <label class="checkbox-row">
+              <input id="applyTab" type="checkbox" />
+              <span>Apply to entire current tab</span>
+            </label>
+
+            <div class="actions">
+              <button id="apply" type="button" class="btn-primary">Apply Filter</button>
+              <button id="reset" type="button" class="btn-outline">Reset</button>
+            </div>
+
+            <p class="note">Desktop ChromaShift still gives full system-wide correction across all apps. This web version is browser-tab only.</p>
+          </div>
+
+          <div class="preview-wrap">
+            <h2>Preview</h2>
+            <div id="preview" class="preview">
+              <div class="swatches">
+                <div class="swatch swatch--rg"><span>Red / Green</span></div>
+                <div class="swatch swatch--ob"><span>Orange / Blue</span></div>
+                <div class="swatch swatch--pb"><span>Purple / Blue</span></div>
+                <div class="swatch swatch--tb"><span>Teal / Brown</span></div>
+              </div>
+              <div class="preview-text">
+                <h3>Sample UI</h3>
+                <p>Use the profile selector and intensity slider to simulate a browser-only accessibility filter.</p>
+                <div class="chips">
+                  <span class="chip">Dashboard</span>
+                  <span class="chip">Reports</span>
+                  <span class="chip">Analytics</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <Footer />
+</Layout>
+
+<script>
+  const profile = document.getElementById('profile')
+  const intensity = document.getElementById('intensity')
+  const intensityValue = document.getElementById('intensityValue')
+  const applyTab = document.getElementById('applyTab')
+  const applyBtn = document.getElementById('apply')
+  const resetBtn = document.getElementById('reset')
+  const preview = document.getElementById('preview')
+
+  const root = document.documentElement
+  const appMain = document.querySelector('main')
+
+  const profileParams = {
+    normal: { grayscale: 0, sepia: 0, hue: 0, saturate: 1, contrast: 1 },
+    deuteranopia: { grayscale: 0.1, sepia: 0.32, hue: -18, saturate: 1.2, contrast: 1.04 },
+    protanopia: { grayscale: 0.15, sepia: 0.38, hue: -28, saturate: 1.22, contrast: 1.04 },
+    tritanopia: { grayscale: 0.08, sepia: 0.2, hue: 38, saturate: 1.16, contrast: 1.03 },
+    achromatopsia: { grayscale: 1, sepia: 0, hue: 0, saturate: 1, contrast: 1.06 },
+  }
+
+  function buildFilter(name, t) {
+    const p = profileParams[name] || profileParams.normal
+    const g = (p.grayscale * t).toFixed(3)
+    const s = (p.sepia * t).toFixed(3)
+    const h = Math.round(p.hue * t)
+    const sat = (1 + (p.saturate - 1) * t).toFixed(3)
+    const c = (1 + (p.contrast - 1) * t).toFixed(3)
+    return `grayscale(${g}) sepia(${s}) hue-rotate(${h}deg) saturate(${sat}) contrast(${c})`
+  }
+
+  function clearAll() {
+    if (preview) preview.style.filter = 'none'
+    if (appMain) appMain.style.filter = 'none'
+    root.style.backgroundColor = ''
+  }
+
+  function applyFilter() {
+    const t = Number(intensity.value) / 100
+    intensityValue.textContent = `${Math.round(t * 100)}%`
+    const filter = buildFilter(profile.value, t)
+
+    clearAll()
+
+    if (applyTab.checked) {
+      if (appMain) appMain.style.filter = filter
+    } else {
+      if (preview) preview.style.filter = filter
+    }
+  }
+
+  intensity?.addEventListener('input', applyFilter)
+  profile?.addEventListener('change', applyFilter)
+  applyBtn?.addEventListener('click', applyFilter)
+
+  resetBtn?.addEventListener('click', () => {
+    profile.value = 'normal'
+    intensity.value = '70'
+    intensityValue.textContent = '70%'
+    applyTab.checked = false
+    clearAll()
+  })
+
+  window.addEventListener('beforeunload', clearAll)
+
+  applyFilter()
+</script>
+
+<style>
+  .page-sub {
+    color: var(--muted);
+    margin-bottom: 2rem;
+  }
+
+  .panel {
+    display: grid;
+    grid-template-columns: 320px 1fr;
+    gap: 1rem;
+  }
+
+  .controls,
+  .preview-wrap {
+    background: var(--card-bg, rgba(255,255,255,.04));
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 1rem;
+  }
+
+  .field {
+    display: block;
+    margin-bottom: 1rem;
+  }
+
+  .field span {
+    display: block;
+    margin-bottom: .45rem;
+    font-size: .9rem;
+  }
+
+  .input,
+  .range {
+    width: 100%;
+  }
+
+  .input {
+    background: rgba(8, 16, 32, .72);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    color: #fff;
+    padding: .55rem .7rem;
+  }
+
+  .checkbox-row {
+    display: flex;
+    align-items: center;
+    gap: .6rem;
+    font-size: .9rem;
+    margin-bottom: 1rem;
+  }
+
+  .actions {
+    display: flex;
+    gap: .6rem;
+    margin-bottom: .85rem;
+  }
+
+  .note {
+    color: var(--muted);
+    font-size: .82rem;
+    line-height: 1.45;
+    margin: 0;
+  }
+
+  .preview-wrap h2 {
+    font-size: 1rem;
+    margin: 0 0 .8rem;
+  }
+
+  .preview {
+    border: 1px solid rgba(116, 209, 255, .2);
+    border-radius: 12px;
+    padding: 1rem;
+    background:
+      radial-gradient(circle at 20% 20%, rgba(32, 185, 255, .18), transparent 46%),
+      radial-gradient(circle at 80% 26%, rgba(255, 97, 64, .14), transparent 45%),
+      linear-gradient(180deg, rgba(12, 20, 38, .9), rgba(7, 12, 24, .9));
+    transition: filter .16s ease;
+  }
+
+  .swatches {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: .65rem;
+    margin-bottom: 1rem;
+  }
+
+  .swatch {
+    border-radius: 10px;
+    min-height: 70px;
+    position: relative;
+    border: 1px solid rgba(255,255,255,.14);
+    overflow: hidden;
+  }
+
+  .swatch span {
+    position: absolute;
+    left: .55rem;
+    bottom: .45rem;
+    font-size: .72rem;
+    background: rgba(0,0,0,.38);
+    border-radius: 999px;
+    padding: .18rem .5rem;
+  }
+
+  .swatch--rg { background: linear-gradient(90deg, #d72f3b 0%, #d72f3b 50%, #31bf67 50%, #31bf67 100%); }
+  .swatch--ob { background: linear-gradient(90deg, #ff9f1c 0%, #ff9f1c 50%, #4da3ff 50%, #4da3ff 100%); }
+  .swatch--pb { background: linear-gradient(90deg, #8d4fd9 0%, #8d4fd9 50%, #3a76ff 50%, #3a76ff 100%); }
+  .swatch--tb { background: linear-gradient(90deg, #1ea8a8 0%, #1ea8a8 50%, #8a5a44 50%, #8a5a44 100%); }
+
+  .preview-text h3 {
+    margin: 0 0 .4rem;
+    font-size: 1rem;
+  }
+
+  .preview-text p {
+    margin: 0 0 .75rem;
+    color: var(--muted);
+    line-height: 1.45;
+  }
+
+  .chips {
+    display: flex;
+    gap: .45rem;
+    flex-wrap: wrap;
+  }
+
+  .chip {
+    font-size: .74rem;
+    border-radius: 999px;
+    border: 1px solid rgba(255,255,255,.18);
+    padding: .2rem .5rem;
+    background: rgba(255,255,255,.07);
+  }
+
+  @media (max-width: 900px) {
+    .panel {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>
