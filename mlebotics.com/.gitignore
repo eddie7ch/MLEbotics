@@ -11,6 +11,7 @@ tokens.json
 
 # Build artifacts
 node_modules/
+apps/marketing/apps/
 
 functions/.env
 functions/.env.*
