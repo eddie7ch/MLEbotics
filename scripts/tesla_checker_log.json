@@ -278,5 +278,12 @@
     "matched": 0,
     "new_listings": 0,
     "cars": []
+  },
+  {
+    "checked_at": "2026-04-20T16:56:24.073579",
+    "total_api": 0,
+    "matched": 0,
+    "new_listings": 0,
+    "cars": []
   }
 ]
